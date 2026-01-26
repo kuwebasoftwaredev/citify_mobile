@@ -311,7 +311,7 @@ export class AddProductPage {
       // API call for deleting the previous image using result.id  in cloudinary
       const publicIdToDelete = this.copies.find((copy) => copy.id === result.id)
         ?.cloudinary.publicId;
-      console.log('publicIdToDeletee', publicIdToDelete);
+      console.log('publicIdToDeleteeeee', publicIdToDelete);
 
       this.updateImage(result.src, result.id, 'product');
     });
