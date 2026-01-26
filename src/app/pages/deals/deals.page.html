@@ -1,0 +1,27 @@
+<!-- <ion-header [translucent]="false">
+  <ion-toolbar>
+    <ion-title>
+      <img [src]="'./assets/spoonwise-logo-full.png'" style="width: 100px" />
+    </ion-title>
+  </ion-toolbar>
+</ion-header> -->
+
+<ion-content [fullscreen]="false">
+  <!-- <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content> </ion-refresher-content>
+  </ion-refresher> -->
+
+  <app-map
+    [height]="'100%'"
+    [zIndex]="'1'"
+    [cities]="cities$ | async"
+    [borderRadius]="'0px'"
+    [detectCurrentLocation]="true"
+    [checkDBLocation]="true"
+    [disabled]="false"
+    [radius]="3000"
+    [nearestShopButton]="true"
+    [topRatedShopButton]="true"
+    (dragend)="onMapDragend($event)"
+  ></app-map>
+</ion-content>

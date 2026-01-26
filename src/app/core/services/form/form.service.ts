@@ -1,0 +1,104 @@
+import { Injectable } from '@angular/core';
+import { AbstractControl, FormArray, FormGroup } from '@angular/forms';
+export type FormErrorMap = {
+  [key: string]: string[] | FormErrorMap;
+};
+
+interface FormLevelErrorConfig {
+  errorKey: string;
+  mapTo: string;
+  message: (labels: Record<string, string>) => string;
+}
+
+@Injectable({
+  providedIn: 'root',
+})
+export class FormService {
+  constructor() {}
+
+  getFormErrorMessages(
+    control: AbstractControl,
+    labelMap: Record<string, string> = {},
+    controlKey: string = '',
+  ): FormErrorMap {
+    const errors: FormErrorMap = {};
+    const label = labelMap[controlKey] || controlKey || 'Field';
+    const FORM_LEVEL_ERROR_MAP: FormLevelErrorConfig[] = [
+      {
+        errorKey: 'variantsRequired',
+        mapTo: 'variants',
+        message: (labels) =>
+          `Required when ${labels['variants'] ?? 'variants'} is enabled`,
+      },
+    ];
+
+    // 🟡 HANDLE FORM CONTROL ERRORS ONLY
+    if (control.errors) {
+      errors[controlKey] = Object.keys(control.errors).map((errorKey) => {
+        switch (errorKey) {
+          case 'required':
+            return 'This field is required.';
+          case 'min':
+            return 'The value is too small.';
+          case 'max':
+            return 'The value is too large.';
+          case 'minlength':
+            return 'The value is too short.';
+          case 'maxlength':
+            return 'The value is too long.';
+          default:
+            return 'This field is invalid.';
+        }
+      });
+    }
+
+    // 🔵 FORM-GROUP LEVEL ERRORS (ROOT ONLY)
+    if (control instanceof FormGroup && controlKey === '') {
+      FORM_LEVEL_ERROR_MAP.forEach((config) => {
+        if (control.hasError(config.errorKey)) {
+          const target = config.mapTo;
+
+          if (!errors[target]) {
+            errors[target] = [];
+          }
+
+          if (Array.isArray(errors[target])) {
+            (errors[target] as string[]).push(config.message(labelMap));
+          }
+        }
+      });
+    }
+
+    // 2️⃣ Handle FormGroup
+    if (control instanceof FormGroup) {
+      Object.keys(control.controls).forEach((key) => {
+        const childErrors = this.getFormErrorMessages(
+          control.controls[key],
+          labelMap,
+          key,
+        );
+
+        if (Object.keys(childErrors).length) {
+          errors[key] = childErrors[key] ?? childErrors;
+        }
+      });
+    }
+
+    // 3️⃣ Handle FormArray
+    if (control instanceof FormArray) {
+      control.controls.forEach((child, index) => {
+        const childErrors = this.getFormErrorMessages(
+          child,
+          labelMap,
+          `${index}`,
+        );
+
+        if (Object.keys(childErrors).length) {
+          errors[index] = childErrors;
+        }
+      });
+    }
+
+    return errors;
+  }
+}

@@ -1,0 +1,25 @@
+<div class="fullscreen-wrapper ion-padding" style="padding: 14px">
+  <div
+    class="gs-group-section"
+    style="width: 93%; z-index: 9999; position: absolute; bottom: 20px"
+  >
+    <div class="d-flex flex-column gap-1 w-100 text-center ion-padding">
+      <ion-button (click)="crop()" style="width: 100%">Crop</ion-button>
+      <ion-button (click)="close()" style="width: 100%">Cancel</ion-button>
+    </div>
+  </div>
+
+  <div class="cropper-center" style="width: 93%">
+    <image-cropper
+      [imageURL]="data.src"
+      [imageBase64]="data.src"
+      [maintainAspectRatio]="true"
+      [aspectRatio]="4 / 4"
+      format="png"
+      (imageCropped)="imageCropped($event)"
+      (imageLoaded)="imageLoaded($event)"
+      (cropperReady)="cropperReady()"
+      (loadImageFailed)="loadImageFailed()"
+    ></image-cropper>
+  </div>
+</div>

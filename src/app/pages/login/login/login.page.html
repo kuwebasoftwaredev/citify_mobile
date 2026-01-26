@@ -1,0 +1,84 @@
+<!-- <ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title></ion-title>
+  </ion-toolbar>
+</ion-header> -->
+
+<ion-content
+  [fullscreen]="true"
+  class="d-flex flex-column justify-content-between"
+>
+  <swiper
+    [loop]="true"
+    [autoHeight]="true"
+    [allowTouchMove]="true"
+    [pagination]="false"
+    [navigation]="false"
+    [autoplay]="{ delay: 2000, disableOnInteraction: false }"
+    class="custom-swiper"
+  >
+    <ng-template swiperSlide *ngFor="let image of images">
+      <img [src]="image" alt="" class="swiper-image" />
+    </ng-template>
+  </swiper>
+
+  <div
+    class="d-flex flex-column gap-2 p-14 ion-padding"
+    style="margin-top: 14px"
+  >
+    <input
+      [value]="username()"
+      (input)="username.set($event.target.value)"
+      placeholder="Username"
+      type="text"
+      class="form-control"
+    />
+    <div>
+      <input
+        [value]="password()"
+        (input)="password.set($event.target.value)"
+        placeholder="Password"
+        type="password"
+        class="form-control"
+      />
+    </div>
+
+    <div>
+      <ion-button
+        (click)="this.loginClick$.next()"
+        size="default"
+        color="light"
+        expand="block"
+        >login</ion-button
+      >
+
+      <div
+        style="
+          margin-top: 28px;
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        "
+      >
+        <ion-button size="default" color="light" expand="block"
+          >signup</ion-button
+        >
+        <ion-button size="default" color="light" expand="block"
+          >sell on spoonwise</ion-button
+        >
+      </div>
+    </div>
+  </div>
+
+  <ion-footer>
+    <div class="ion-text-center ion-padding">
+      <img [src]="'./assets/spoonwise-logo-full.png'" style="width: 100px" />
+      <div
+        class="d-block text-center"
+        style="color: var(--spoonwise-secondary)"
+      >
+        powered by kuweba
+      </div>
+    </div>
+  </ion-footer>
+</ion-content>

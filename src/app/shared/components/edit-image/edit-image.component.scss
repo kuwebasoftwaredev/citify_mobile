@@ -1,0 +1,104 @@
+.fullscreen-wrapper {
+  position: relative; /* cover whole screen */
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #000000e3;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+/* Centered cropper */
+.cropper-center {
+  position: absolute;
+  z-index: 2;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Bottom action buttons */
+.actions {
+  position: absolute;
+  bottom: 20px;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 16px;
+}
+
+.ngx-ic-cropper {
+  // outline: var(--cropper-outline-color, rgba(0, 0, 0, 0.8901960784)) solid 100vw !important;
+  color: transparent !important;
+  border-radius: var(--spoonwise-large-border-radius) !important;
+
+  .ngx-ic-overlay {
+    outline: none !important;
+    border-radius: var(--spoonwise-large-border-radius) !important;
+  }
+
+  .ngx-ic-move {
+    // position: relative;
+    border-radius: var(--spoonwise-large-border-radius);
+    border: none !important;
+  }
+
+  .ngx-ic-resize {
+    line-height: normal !important;
+    .ngx-ic-square {
+      width: 50px !important; /* length of the curve */
+      height: 40px !important; /* space for the arc */
+      border: none !important;
+
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 40'%3E%3Cpath d='M10 30 Q45 5 80 30' fill='none' stroke='%23f7d94f' stroke-width='15' stroke-linecap='round'/%3E%3C/svg%3E")
+        no-repeat center / contain !important;
+
+      color: #f7d94f !important;
+    }
+  }
+
+  .ngx-ic-topright {
+    top: -12px !important;
+    right: -12px !important;
+    transform: rotate(45deg);
+  }
+  .ngx-ic-topleft {
+    top: -12px !important;
+    left: -12px !important;
+    transform: rotate(-45deg);
+  }
+  .ngx-ic-bottomright {
+    bottom: -12px !important;
+    right: -12px !important;
+
+    transform: rotate(135deg);
+    transform-origin: center;
+  }
+  .ngx-ic-bottomleft {
+    bottom: -12px !important;
+    left: -12px !important;
+    transform: rotate(-135deg);
+  }
+
+  .ngx-ic-top {
+    display: none !important;
+  }
+
+  .ngx-ic-bottom {
+    display: none !important;
+  }
+
+  .ngx-ic-left {
+    display: none !important;
+  }
+
+  .ngx-ic-right {
+    display: none !important;
+  }
+}

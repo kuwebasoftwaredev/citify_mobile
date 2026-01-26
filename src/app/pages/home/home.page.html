@@ -1,0 +1,23 @@
+<ion-header [translucent]="false">
+  <ion-toolbar>
+    <ion-title (click)="logout()">
+      <img [src]="'./assets/spoonwise-logo-full.png'" style="width: 100px" />
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content
+  [fullscreen]="true"
+  [scrollEvents]="true"
+  (ionScrollEnd)="onScrollEnd($event)"
+  (ionScroll)="onScroll($event)"
+  class="ion-padding"
+>
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content> </ion-refresher-content>
+  </ion-refresher>
+
+  <app-blog-list></app-blog-list>
+
+  <!-- <app-explore-container name="Tab 1 page"></app-explore-container> -->
+</ion-content>

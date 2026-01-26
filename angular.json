@@ -31,11 +31,16 @@
                 "output": "./svg"
               }
             ],
-            "styles": ["src/global.scss", "src/theme/variables.scss"],
-            "scripts": []
+            "styles": [
+              "src/global.scss",
+              "src/theme/variables.scss",
+              "node_modules/bootstrap-icons/font/bootstrap-icons.css"
+            ],
+            "scripts": [],
+            "webWorkerTsConfig": "tsconfig.worker.json"
           },
           "configurations": {
-            "production": {
+            "mobile-dev": {
               "budgets": [
                 {
                   "type": "initial",
@@ -51,39 +56,63 @@
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.prod.ts"
+                  "with": "src/environments/environment.mobile-dev.ts"
                 }
               ],
               "outputHashing": "all"
             },
-            "development": {
+            "web-dev": {
               "buildOptimizer": false,
               "optimization": false,
               "vendorChunk": true,
               "extractLicenses": false,
               "sourceMap": true,
-              "namedChunks": true
+              "namedChunks": true,
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.web-dev.ts"
+                }
+              ]
+            },
+            "mobile-prod": {
+              "buildOptimizer": false,
+              "optimization": false,
+              "vendorChunk": true,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "namedChunks": true,
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.mobile-prod.ts"
+                }
+              ]
             },
             "ci": {
               "progress": false
             }
           },
-          "defaultConfiguration": "production"
+          "defaultConfiguration": "mobile-dev"
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
-            "production": {
-              "buildTarget": "app:build:production"
+            "mobile-prod": {
+              "buildTarget": "app:build:mobile-prod"
             },
-            "development": {
-              "buildTarget": "app:build:development"
+            "mobile-dev": {
+              "buildTarget": "app:build:mobile-dev"
             },
+            "web-dev": {
+              "buildTarget": "app:build:web-dev"
+            },
+
             "ci": {
               "progress": false
             }
           },
-          "defaultConfiguration": "development"
+          "defaultConfiguration": "mobile-dev"
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
@@ -111,8 +140,13 @@
                 "output": "./svg"
               }
             ],
-            "styles": ["src/global.scss", "src/theme/variables.scss"],
-            "scripts": []
+            "styles": [
+              "src/global.scss",
+              "src/theme/variables.scss",
+              "node_modules/bootstrap-icons/font/bootstrap-icons.css"
+            ],
+            "scripts": [],
+            "webWorkerTsConfig": "tsconfig.worker.json"
           },
           "configurations": {
             "ci": {
@@ -124,19 +158,15 @@
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
-            "lintFilePatterns": [
-              "src/**/*.ts",
-              "src/**/*.html"
-            ]
+            "lintFilePatterns": ["src/**/*.ts", "src/**/*.html"]
           }
         }
       }
     }
   },
   "cli": {
-    "schematicCollections": [
-      "@ionic/angular-toolkit"
-    ]
+    "schematicCollections": ["@ionic/angular-toolkit"],
+    "analytics": "36ab68d6-8570-43e5-8b3b-a12144fdfe88"
   },
   "schematics": {
     "@ionic/angular-toolkit:component": {

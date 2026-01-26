@@ -1,0 +1,27 @@
+<!-- <ion-header [translucent]="false">
+  <ion-toolbar>
+    <ion-title>One Time PIN</ion-title>
+  </ion-toolbar>
+</ion-header> -->
+
+<div style="margin-top: 14px"></div>
+<ion-content [fullscreen]="true">
+  <ion-input-otp
+    #otp
+    length="4"
+    pattern="[\p{L}\p{N}]"
+    shape="soft"
+    size="large"
+    (ionComplete)="checkOTP_API()"
+  >
+    <div class="d-block">
+      Didn't get a code? @if (isExpired) {
+      <span class="ls-resend" (click)="resendOTPClick$.next()"
+        >Resend the code</span
+      >
+      } @else { Resend in
+      {{ expiresAt | countDown : updateCountdown.bind(this) }}
+      }
+    </div>
+  </ion-input-otp>
+</ion-content>

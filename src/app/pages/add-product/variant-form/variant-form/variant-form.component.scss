@@ -1,0 +1,4 @@
+:host(.modal-sheet) {
+  --ion-safe-area-top: 70px !important; /* <-- your custom value */
+  //   --height: calc(100% - (var(--ion-safe-area-top) + 10px));
+}

@@ -1,0 +1,820 @@
+<ion-header [translucent]="false">
+  <ion-toolbar>
+    <ion-title>
+      <img [src]="'./assets/spoonwise-logo-full.png'" style="width: 100px" />
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="false" class="ion-padding" [formGroup]="productForm">
+  <div class="d-flex flex-column gap-2">
+    <!-- Product Images -->
+    <div class="gs-group-section">
+      <div
+        class="gs-custom-form-ui-container"
+        [class.gs-custom-form-ui-container-error]="
+  productForm.get('images')?.invalid &&
+  (productForm.get('images')?.touched || isProductFormSubmitted)
+"
+      >
+        @if (copies.length > 0) {
+        <div
+          style="
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 7px;
+          "
+        >
+          <div
+            #scrollContainer
+            cdkDropList
+            cdkDropListOrientation="horizontal"
+            class="example-list"
+            (cdkDropListDropped)="drop($event)"
+          >
+            <div
+              cdkDrag
+              class="example-box"
+              *ngFor="let copy of copies; index as i"
+            >
+              @if(!copy.uploaded.cloudinary && isUploadGalleryTriggered) {
+              <span class="failed-upload-dot"></span>
+              }
+
+              <div class="image-actions">
+                <div class="buttons">
+                  <span
+                    (click)="remove(copy)"
+                    class="material-symbols-outlined"
+                  >
+                    delete
+                  </span>
+                  <span
+                    (click)="openCropper(copy)"
+                    class="material-symbols-outlined"
+                  >
+                    crop
+                  </span>
+                  <span cdkDragHandle class="material-symbols-outlined">
+                    swap_horiz
+                  </span>
+                </div>
+              </div>
+
+              <img
+                [src]="copy.src"
+                alt=""
+                style="border-radius: var(--spoonwise-large-border-radius)"
+              />
+            </div>
+          </div>
+        </div>
+        }
+
+        <div
+          style="
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+          "
+        >
+          <div class="d-flex flex-row gap-2 align-items-center">
+            <div>
+              <button
+                mat-icon-button
+                color="primary"
+                style="
+                  width: 50px;
+                  height: 50px;
+                  border-radius: var(--spoonwise-border-radius) 0px 0px
+                    var(--spoonwise-border-radius);
+                "
+                (click)="openGalleryForProduct()"
+              >
+                <ion-icon name="image-sharp"></ion-icon>
+              </button>
+
+              <button
+                mat-icon-button
+                color="primary"
+                style="
+                  width: 50px;
+                  height: 50px;
+                  border-radius: 0px var(--spoonwise-border-radius)
+                    var(--spoonwise-border-radius) 0px;
+                "
+                (click)="openCamera()"
+              >
+                <ion-icon name="camera-sharp"></ion-icon>
+              </button>
+            </div>
+
+            <div>
+              @if(productForm.get('images')?.valid &&
+              (productForm.get('images')?.touched || isProductFormSubmitted)) {
+              <i class="bi bi-check-circle-fill text-success"></i>
+              } @else if(productForm.get('images')?.invalid &&
+              (productForm.get('images')?.touched || isProductFormSubmitted)) {
+              <i class="bi bi-exclamation-circle-fill text-danger"></i>
+              }
+            </div>
+          </div>
+
+          <div class="small-text-size">
+            <p>
+              Photos ({{ copies.length }}/3) Add up to 3 photos. <br />
+              Drag to reorder. The first photo will be your thumbnail.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gs-group-section">
+      <!-- Product Name -->
+      <ion-textarea
+        label="Product Name"
+        labelPlacement="floating"
+        type="text"
+        inputmode="text"
+        autocapitalize="words"
+        fill="outline"
+        maxlength="100"
+        autogrow="true"
+        formControlName="productName"
+      >
+        @if( productForm.get('productName')?.valid &&
+        (productForm.get('productName')?.touched ||
+        productForm.get('productName')?.dirty)) {
+        <i slot="end" class="bi bi-check-circle-fill text-success"></i>
+        }@else if(productForm.get('productName')?.invalid &&
+        (productForm.get('productName')?.touched ||
+        productForm.get('productName')?.dirty)){
+        <i slot="end" class="bi bi-exclamation-circle-fill text-danger"></i>
+        }
+      </ion-textarea>
+
+      <!-- Product Description -->
+      <ion-textarea
+        label="Description"
+        labelPlacement="floating"
+        type="text"
+        inputmode="text"
+        fill="outline"
+        maxlength="1500"
+        autoGrow="true"
+        formControlName="description"
+      >
+        @if( productForm.get('description')?.valid &&
+        (productForm.get('description')?.touched ||
+        productForm.get('description')?.dirty)) {
+        <i slot="end" class="bi bi-check-circle-fill text-success"></i>
+        } @else if(productForm.get('description')?.invalid &&
+        (productForm.get('description')?.touched ||
+        productForm.get('description')?.dirty)){
+        <i slot="end" class="bi bi-exclamation-circle-fill text-danger"></i>
+        }
+      </ion-textarea>
+
+      <!-- Product Category -->
+      <div
+        class="gs-custom-form-ui-container"
+        [class.gs-custom-form-ui-container-error]="
+    productForm.get('category')?.invalid &&
+    (productForm.get('category')?.touched || productForm.get('category')?.dirty)
+  "
+      >
+        <div class="gs-first-row-container">
+          <ion-label
+            [class.gs-custom-form-ui-text-error]="
+    productForm.get('category')?.invalid &&
+    (productForm.get('category')?.touched || productForm.get('category')?.dirty)"
+          >
+            Category</ion-label
+          >
+
+          <div class="select-button-wrapper ion-activatable">
+            <ion-ripple-effect></ion-ripple-effect>
+            <ion-select
+              [interfaceOptions]="{
+           breakpoints: [0, 0.3],
+            initialBreakpoint: 0.3,
+            cancelText: '', 
+          }"
+              placeholder="Select"
+              interface="modal"
+              multiple="true"
+              formControlName="category"
+            >
+              <ion-select-option value="reese">Reese</ion-select-option>
+              <ion-select-option value="snickers">Snickers</ion-select-option>
+              <ion-select-option value="twix">Twix</ion-select-option>
+            </ion-select>
+          </div>
+
+          @if( productForm.get('category')?.valid &&
+          (productForm.get('category')?.touched ||
+          productForm.get('category')?.dirty)) {
+          <i slot="end" class="bi bi-check-circle-fill text-success"></i>
+          }@else if(productForm.get('category')?.invalid &&
+          (productForm.get('category')?.touched ||
+          productForm.get('category')?.dirty)){
+          <i slot="end" class="bi bi-exclamation-circle-fill text-danger"></i>
+          }
+        </div>
+      </div>
+
+      <!-- Product Sub Category -->
+      <div
+        class="gs-custom-form-ui-container"
+        [class.gs-custom-form-ui-container-error]="
+    productForm.get('subcategory')?.invalid &&
+    (productForm.get('subcategory')?.touched || productForm.get('subcategory')?.dirty)
+  "
+      >
+        <div class="gs-first-row-container">
+          <ion-label
+            [class.gs-custom-form-ui-text-error]="
+    productForm.get('subcategory')?.invalid &&
+    (productForm.get('subcategory')?.touched || productForm.get('subcategory')?.dirty)
+  "
+          >
+            Sub Category</ion-label
+          >
+
+          <div class="select-button-wrapper ion-activatable">
+            <ion-ripple-effect></ion-ripple-effect>
+            <ion-select
+              [interfaceOptions]="{
+           breakpoints: [0, 0.3],
+            initialBreakpoint: 0.3,
+            cancelText: '', 
+          }"
+              placeholder="Select"
+              interface="modal"
+              multiple="true"
+              formControlName="subcategory"
+            >
+              <ion-select-option value="reese's">Reese's</ion-select-option>
+              <ion-select-option value="snickers">Snickers</ion-select-option>
+              <ion-select-option value="twix">Twix</ion-select-option>
+            </ion-select>
+          </div>
+
+          @if( productForm.get('subcategory')?.valid &&
+          (productForm.get('subcategory')?.touched ||
+          productForm.get('subcategory')?.dirty)) {
+          <i slot="end" class="bi bi-check-circle-fill text-success"></i>
+          }@else if(productForm.get('subcategory')?.invalid &&
+          (productForm.get('subcategory')?.touched ||
+          productForm.get('subcategory')?.dirty)){
+          <i slot="end" class="bi bi-exclamation-circle-fill text-danger"></i>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="gs-group-section">
+      <!-- Publishing Option -->
+      <div class="gs-custom-form-ui-container">
+        <div class="gs-first-row-container">
+          <ion-label> Publishing Option</ion-label>
+
+          <div class="select-button-wrapper ion-activatable">
+            <ion-ripple-effect></ion-ripple-effect>
+            <ion-select
+              formControlName="publishStatus"
+              aria-label="Fruit"
+              interface="action-sheet"
+              placeholder="Select fruit"
+              justify="end"
+              mode="ios"
+            >
+              <ion-select-option value="1"
+                >Publish Right Away</ion-select-option
+              >
+              <ion-select-option value="2"
+                >Set Schedule Date
+              </ion-select-option>
+            </ion-select>
+          </div>
+
+          @if( productForm.get('publishStatus')?.valid &&
+          (productForm.get('publishStatus')?.touched ||
+          productForm.get('publishStatus')?.dirty)) {
+          <i slot="end" class="bi bi-check-circle-fill text-success"></i>
+          }@else if(productForm.get('publishStatus')?.invalid &&
+          (productForm.get('publishStatus')?.touched ||
+          productForm.get('publishStatus')?.dirty)){
+          <i slot="end" class="bi bi-exclamation-circle-fill text-danger"></i>
+          }
+        </div>
+
+        @if(productForm.get('publishStatus')?.value === '2') {
+        <div>
+          <div class="gs-first-row-container">
+            <div class="datetime-wrapper">
+              <ion-datetime-button datetime="datetime"></ion-datetime-button>
+
+              <ion-modal [keepContentsMounted]="true">
+                <ng-template>
+                  <ion-datetime
+                    id="datetime"
+                    minute-values="0,30"
+                    [min]="getTomorrowStartISO()"
+                    formControlName="scheduledDate"
+                  ></ion-datetime>
+                </ng-template>
+              </ion-modal>
+            </div>
+          </div>
+        </div>
+
+        <div class="small-text-size d-block">
+          <p>Product will be published automatically at this date and time.</p>
+        </div>
+        }
+      </div>
+    </div>
+
+    <div class="gs-group-section">
+      <!-- Product Variants -->
+      <div
+        class="gs-custom-form-ui-container"
+        [class.gs-custom-form-ui-container-error]="
+    productForm.hasError('variantsRequired') &&
+  isProductFormSubmitted"
+      >
+        <div class="gs-first-row-container">
+          <ion-label
+            [class.gs-custom-form-ui-text-error]="
+    productForm.hasError('variantsRequired') &&
+  isProductFormSubmitted"
+          >
+            Product Variants
+          </ion-label>
+
+          <ion-toggle
+            (ionChange)="onToggleChange($event)"
+            mode="ios"
+            id="hasVariantToggle"
+            formControlName="hasVariants"
+          ></ion-toggle>
+
+          @if(productForm.get('variants')?.valid &&
+          (productForm.get('variants')?.touched ||
+          productForm.get('variants')?.dirty)) {
+          <i slot="end" class="bi bi-check-circle-fill text-success"></i>
+          }@else if(productForm.hasError('variantsRequired') &&
+          isProductFormSubmitted ){
+          <i slot="end" class="bi bi-exclamation-circle-fill text-danger"></i>
+          }
+        </div>
+
+        <div class="small-text-size d-block">
+          <p>Enable this if your product has multiple variants.</p>
+        </div>
+
+        @if(hasVariants) {
+
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+          "
+        ></div>
+
+        <div class="variant-list">
+          @for (variant of variants.controls; let i = $index; track variant) {
+
+          <div
+            style="
+              background-color: var(spoonwise-very-light-background);
+              border-radius: var(--spoonwise-border-radius);
+            "
+          >
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+              "
+            >
+              <div>{{ variant.value.name | titlecase }}</div>
+
+              <div class="d-flex flex-row">
+                <button
+                  mat-icon-button
+                  color="primary"
+                  style="
+                    width: 3rem;
+                    height: 3rem;
+                    border-radius: var(--spoonwise-border-radius) 0px 0px
+                      var(--spoonwise-border-radius);
+                  "
+                  (click)="openVariantForm(i)"
+                >
+                  <span class="material-symbols-outlined"> edit_note </span>
+                </button>
+
+                <button
+                  mat-icon-button
+                  color="primary"
+                  style="
+                    width: 3rem;
+                    height: 3rem;
+                    border-radius: 0px var(--spoonwise-border-radius)
+                      var(--spoonwise-border-radius) 0px;
+                  "
+                  (click)="removeVariant(i)"
+                >
+                  <span class="material-symbols-outlined"> close_small </span>
+                </button>
+              </div>
+            </div>
+
+            <div
+              style="margin-top: 7px; display: flex; flex-wrap: wrap; gap: 7px"
+            ></div>
+          </div>
+
+          }
+        </div>
+
+        <div class="d-flex justify-content-center">
+          <ion-button
+            (click)="openVariantForm()"
+            class="w-50"
+            size="medium"
+            color="light"
+          >
+            <div class="d-flex w-100 align-items-center justify-content-center">
+              <div><i class="bi bi-plus"></i></div>
+              <div>Add Variant</div>
+            </div>
+          </ion-button>
+        </div>
+        }
+      </div>
+
+      <!-- Product SKU -->
+      <div
+        class="gs-custom-form-ui-container"
+        [class.gs-custom-form-ui-container-error]="
+    productForm.get('skus')?.invalid &&
+    (productForm.get('skus')?.touched || productForm.get('skus')?.dirty)"
+      >
+        <div class="gs-first-row-container">
+          <ion-label
+            [class.gs-custom-form-ui-text-error]="
+    productForm.get('skus')?.invalid &&
+    (productForm.get('skus')?.touched || productForm.get('skus')?.dirty)"
+          >
+            Product SKU
+          </ion-label>
+
+          @if(productForm.get('skus')?.valid &&
+          (productForm.get('skus')?.touched || productForm.get('skus')?.dirty))
+          {
+          <i
+            slot="end"
+            class="bi bi-check-circle-fill text-success"
+            style="position: absolute; right: 43px"
+          ></i>
+          } @else if(productForm.get('skus')?.invalid &&
+          (productForm.get('skus')?.touched || productForm.get('skus')?.dirty)){
+          <i
+            slot="end"
+            class="bi bi-exclamation-circle-fill text-danger"
+            style="position: absolute; right: 43px"
+          ></i>
+          }
+        </div>
+
+        <div class="small-text-size d-block">
+          <p>Enter a unique SKU to identify this product.</p>
+        </div>
+
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+          "
+        ></div>
+
+        <div class="variant-list">
+          @for (sku of skus.controls; let i = $index; track sku) {
+          <div
+            class="d-flex flex-column gap-1"
+            style="
+              background-color: var(spoonwise-very-light-background);
+              border-radius: var(--spoonwise-border-radius);
+            "
+          >
+            <div
+              class="d-flex flex-row gap-1 align-items-center justify-content-between"
+            ></div>
+
+            <div
+              class="d-flex flex-row gap-1 justify-content-between align-items-center"
+            >
+              <div class="d-flex flex-row gap-2">
+                <div>
+                  <img
+                    [src]="sku.value?.image?.copy?.src"
+                    class="image"
+                    alt=""
+                    srcset=""
+                    width="80"
+                  />
+                </div>
+
+                <div class="d-flex flex-column gap-1">
+                  <div>{{ sku.value?.combination | selectedVariantLabel}}</div>
+                  <div>
+                    <p>{{ sku.value?.price | currency:'PHP':'symbol' }}</p>
+                  </div>
+                  <div>
+                    <p>
+                      {{ sku.value?.stock }}
+                      <span style="color: #bebebe">Pieces</span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="d-flex flex-column">
+                <button
+                  mat-icon-button
+                  color="primary"
+                  style="
+                    width: 3rem;
+                    height: 3rem;
+                    border-radius: var(--spoonwise-border-radius)
+                      var(--spoonwise-border-radius) 0px 0px;
+                  "
+                  (click)="openSKUForm(i)"
+                >
+                  <span class="material-symbols-outlined"> edit_note </span>
+                </button>
+
+                <button
+                  mat-icon-button
+                  color="primary"
+                  style="
+                    width: 3rem;
+                    height: 3rem;
+                    border-radius: 0px 0px var(--spoonwise-border-radius)
+                      var(--spoonwise-border-radius);
+                  "
+                  (click)="removeSKU(i)"
+                >
+                  <span class="material-symbols-outlined"> close_small </span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          }
+
+          <div class="d-flex justify-content-center">
+            <ion-button
+              (click)="openSKUForm()"
+              class="w-50"
+              size="medium"
+              color="light"
+            >
+              <div
+                class="d-flex w-100 align-items-center justify-content-center"
+              >
+                <div><i class="bi bi-plus"></i></div>
+                <div>Add SKU</div>
+              </div>
+            </ion-button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Semantic Image Search -->
+    <div class="gs-group-section">
+      <div
+        style="position: relative"
+        class="gs-custom-form-ui-container d-flex flex-column gap-2 align-items-space-evenly justify-content-center"
+        [class.gs-custom-form-ui-container-error]="
+          semanticImageFormControl.invalid &&
+          (semanticImageFormControl.touched || isProductFormSubmitted)
+        "
+      >
+        @if (this.semanticImage.copy.src) {
+        <div
+          style="
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 7px;
+            margin-bottom: 14px;
+          "
+        >
+          <div class="example-box">
+            <div class="image-actions">
+              <div class="buttons">
+                <span
+                  class="material-symbols-outlined"
+                  (click)="removeSemanticImage()"
+                >
+                  delete
+                </span>
+                <span
+                  class="material-symbols-outlined"
+                  (click)="openCropperSemanticImage()"
+                >
+                  crop
+                </span>
+              </div>
+            </div>
+
+            <img
+              [src]="this.semanticImage.copy.src"
+              alt=""
+              style="border-radius: var(--spoonwise-large-border-radius)"
+            />
+          </div>
+        </div>
+        } @else {
+        <div
+          style="
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+          "
+        >
+          <div class="d-flex flex-row gap-2 align-items-center">
+            <div>
+              <button
+                mat-icon-button
+                color="primary"
+                style="
+                  width: 50px;
+                  height: 50px;
+                  border-radius: var(--spoonwise-border-radius) 0px 0px
+                    var(--spoonwise-border-radius);
+                "
+                (click)="openGalleryForSingle()"
+              >
+                <ion-icon name="image-sharp"></ion-icon>
+              </button>
+
+              <button
+                mat-icon-button
+                color="primary"
+                style="
+                  width: 50px;
+                  height: 50px;
+                  border-radius: 0px var(--spoonwise-border-radius)
+                    var(--spoonwise-border-radius) 0px;
+                "
+                (click)="openCameraSingle()"
+              >
+                <ion-icon name="camera-sharp"></ion-icon>
+              </button>
+            </div>
+
+            <div>
+              @if ( semanticImageFormControl.valid &&
+              (semanticImageFormControl.touched || isProductFormSubmitted) ) {
+              <i class="bi bi-check-circle-fill text-success"></i>
+              } @else if ( semanticImageFormControl.invalid &&
+              (semanticImageFormControl.touched || isProductFormSubmitted) ) {
+              <i class="bi bi-exclamation-circle-fill text-danger"></i>
+              }
+            </div>
+          </div>
+        </div>
+        }
+
+        <div class="d-flex align-items-center justify-content-center">
+          <ion-chip
+            color="tertiary"
+            style="
+              width: 170px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            "
+          >
+            <ion-avatar>
+              <span class="material-symbols-outlined" style="font-size: 20px">
+                wand_stars
+              </span>
+            </ion-avatar>
+            <ion-label>AI Image Search</ion-label>
+          </ion-chip>
+        </div>
+
+        <div class="small-text-size">
+          <p>
+            This image helps Citify recognize your product when customers search
+            using photos.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Product Form Error Summary -->
+    @if(productForm.invalid && isProductFormSubmitted) {
+    <div class="gs-group-section">
+      <div class="error-summary">
+        <div class="error-header">
+          <ion-text>
+            <strong
+              >Almost there! Please review and correct the fields below.</strong
+            >
+          </ion-text>
+        </div>
+        <div class="form-errors">
+          @for (group of groupedErrors; track group.control) {
+          <div class="error-group">
+            <ion-text color="danger">
+              <strong>{{ group.label }}</strong>
+            </ion-text>
+
+            @for (message of group.messages; track message) {
+            <ion-text color="danger" class="d-block">
+              <small>{{ message }}</small>
+            </ion-text>
+            }
+          </div>
+          }
+        </div>
+      </div>
+    </div>
+    }
+
+    <!-- Image Upload Error Summary -->
+    @if(isUploadGalleryTriggered && someGalleryImagesNotUploadedInCloudinary) {
+    <div class="gs-group-section">
+      <div class="error-summary">
+        <div class="error-header">
+          <ion-text>
+            <strong>Some images failed to upload. Please try again.</strong>
+          </ion-text>
+        </div>
+        <div>
+          <ion-button
+            (click)="uploadProductGalleryAPI(productId)"
+            size="medium"
+            expand="block"
+            >Re-upload Images</ion-button
+          >
+          <ion-text color="danger" class="d-block">
+            <small>
+              {{ someGalleryImagesNotUploadedInCloudinary }} image(s) failed to
+              upload.
+            </small>
+          </ion-text>
+          <ion-text color="danger" class="d-block">
+            <small>
+              Make sure you have a stable internet connection and try
+              re-uploading the images.
+            </small>
+          </ion-text>
+        </div>
+      </div>
+    </div>
+    }
+
+    <!-- Product Form Buttons -->
+    <div class="gs-group-section">
+      <div class="d-flex flex-column">
+        <div class="d-flex flex-column gap-1 w-100 text-center pb-2">
+          <ion-text>
+            By publishing this product, you confirm that it complies with
+            <ion-text color="primary" (click)="openTerms('marketplace')"
+              >Citify’s Marketplace Terms</ion-text
+            >
+            and
+            <ion-text color="primary" (click)="openTerms('prohibitedItems')"
+              >Prohibited Items Policy</ion-text
+            >.
+          </ion-text>
+        </div>
+        <ion-button (click)="saveAsDraft()" size="medium" expand="block"
+          >Save as draft</ion-button
+        >
+        <ion-button (click)="saveProduct()" size="medium" expand="block"
+          >Save</ion-button
+        >
+      </div>
+    </div>
+  </div>
+</ion-content>

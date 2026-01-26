@@ -1,0 +1,231 @@
+<ion-content fullscreen class="ion-padding" scroll-y="true">
+  <div [formGroup]="SKUForm" class="d-flex flex-column gap-2">
+    <!-- Image -->
+    <div class="gs-group-section">
+      <div
+        class="gs-custom-form-ui-container d-flex flex-column gap-2 align-items-space-evenly justify-content-center"
+        [class.gs-custom-form-ui-container-error]="
+          SKUForm.get('image')?.invalid &&
+          (SKUForm.get('image')?.touched || isSKUFormSubmitted)
+        "
+      >
+        @if (this.imageSKU && this.imageSKU.copy.src) {
+          <div
+            style="
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              gap: 7px;
+              margin-bottom: 14px;
+            "
+          >
+            <div class="example-box">
+              <div class="image-actions">
+                <div class="buttons">
+                  <span class="material-symbols-outlined" (click)="remove()">
+                    delete
+                  </span>
+                  <span
+                    class="material-symbols-outlined"
+                    (click)="openCropper()"
+                  >
+                    crop
+                  </span>
+                </div>
+              </div>
+
+              <img
+                [src]="this.imageSKU.copy.src"
+                alt=""
+                style="border-radius: var(--spoonwise-large-border-radius)"
+              />
+            </div>
+          </div>
+        } @else {
+          <div
+            style="
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              gap: 7px;
+            "
+          >
+            <div class="d-flex flex-row gap-2 align-items-center">
+              <div>
+                <button
+                  mat-icon-button
+                  color="primary"
+                  style="
+                    width: 50px;
+                    height: 50px;
+                    border-radius: var(--spoonwise-border-radius) 0px 0px
+                      var(--spoonwise-border-radius);
+                  "
+                  (click)="openGalleryForSingle()"
+                >
+                  <ion-icon name="image-sharp"></ion-icon>
+                </button>
+
+                <button
+                  mat-icon-button
+                  color="primary"
+                  style="
+                    width: 50px;
+                    height: 50px;
+                    border-radius: 0px var(--spoonwise-border-radius)
+                      var(--spoonwise-border-radius) 0px;
+                  "
+                  (click)="openCameraSingle()"
+                >
+                  <ion-icon name="camera-sharp"></ion-icon>
+                </button>
+              </div>
+
+              <div>
+                @if (
+                  SKUForm.get("image")?.valid &&
+                  (SKUForm.get("image")?.touched || isSKUFormSubmitted)
+                ) {
+                  <i class="bi bi-check-circle-fill text-success"></i>
+                } @else if (
+                  SKUForm.get("image")?.invalid &&
+                  (SKUForm.get("image")?.touched || isSKUFormSubmitted)
+                ) {
+                  <i class="bi bi-exclamation-circle-fill text-danger"></i>
+                }
+              </div>
+            </div>
+          </div>
+        }
+
+        <div class="small-text-size">
+          <p>
+            Upload the image here. <br />
+            This image will be used as the SKU thumbnail.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Combination -->
+    <div class="gs-group-section">
+      <div
+        class="gs-custom-form-ui-container"
+        [class.gs-custom-form-ui-container-error]="
+          SKUForm.get('combination')?.invalid &&
+          (SKUForm.get('combination')?.touched ||
+            SKUForm.get('combination')?.dirty)
+        "
+      >
+        <div class="gs-first-row-container">
+          <ion-label
+            [class.gs-custom-form-ui-text-error]="
+              SKUForm.get('combination')?.invalid &&
+              (SKUForm.get('combination')?.touched ||
+                SKUForm.get('combination')?.dirty)
+            "
+          >
+            Combination</ion-label
+          >
+
+          <div class="select-button-wrapper ion-activatable">
+            <ion-ripple-effect></ion-ripple-effect>
+            <ion-select
+              [interfaceOptions]="{ cancelText: '' }"
+              placeholder="Select Combination"
+              interface="modal"
+              formControlName="combination"
+              [compareWith]="compareVariants"
+            >
+              @for (variant of variantCombinations; track $index) {
+                <ion-select-option
+                  [value]="variant"
+                  [disabled]="variant?.disabled"
+                >
+                  {{ variant | variantLabel }}
+                </ion-select-option>
+              }
+            </ion-select>
+          </div>
+
+          @if (
+            SKUForm.get("combination")?.valid &&
+            (SKUForm.get("combination")?.touched ||
+              SKUForm.get("combination")?.dirty)
+          ) {
+            <i slot="end" class="bi bi-check-circle-fill text-success"></i>
+          } @else if (
+            SKUForm.get("combination")?.invalid &&
+            (SKUForm.get("combination")?.touched ||
+              SKUForm.get("combination")?.dirty)
+          ) {
+            <i slot="end" class="bi bi-exclamation-circle-fill text-danger"></i>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Price and Stock -->
+    <div class="gs-group-section">
+      <div class="d-flex flex-row gap-2">
+        <!-- Price -->
+        <ion-input
+          kuwebaPriceFormat
+          label="Price"
+          labelPlacement="floating"
+          type="text"
+          inputmode="decimal"
+          fill="outline"
+          formControlName="price"
+          placeholder="0.00"
+        >
+          <!-- Peso sign -->
+          <span slot="start" class="fw-bold">₱</span>
+
+          @if (
+            SKUForm.get("price")?.valid &&
+            (SKUForm.get("price")?.touched || SKUForm.get("price")?.dirty)
+          ) {
+            <i slot="end" class="bi bi-check-circle-fill text-success"></i>
+          } @else if (
+            SKUForm.get("price")?.invalid &&
+            (SKUForm.get("price")?.touched || SKUForm.get("price")?.dirty)
+          ) {
+            <i slot="end" class="bi bi-exclamation-circle-fill text-danger"></i>
+          }
+        </ion-input>
+
+        <!-- Stock -->
+        <ion-input
+          kuwebaNoLeadingZero
+          label="Stock"
+          labelPlacement="floating"
+          type="number"
+          inputmode="numeric"
+          fill="outline"
+          formControlName="stock"
+          placeholder="0"
+          min="0"
+        >
+          <!-- Validation icons -->
+          @if (
+            SKUForm.get("stock")?.valid &&
+            (SKUForm.get("stock")?.touched || SKUForm.get("stock")?.dirty)
+          ) {
+            <i slot="end" class="bi bi-check-circle-fill text-success"></i>
+          } @else if (
+            SKUForm.get("stock")?.invalid &&
+            (SKUForm.get("stock")?.touched || SKUForm.get("stock")?.dirty)
+          ) {
+            <i slot="end" class="bi bi-exclamation-circle-fill text-danger"></i>
+          }
+        </ion-input>
+      </div>
+    </div>
+
+    <div class="gs-group-section">
+      <ion-button expand="block" (click)="saveSKU()"> Save </ion-button>
+    </div>
+  </div>
+</ion-content>

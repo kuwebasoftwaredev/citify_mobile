@@ -1,2 +1,14 @@
 // For information on how to create your own theme, please see:
 // http://ionicframework.com/docs/theming/
+
+:root {
+  --spoonwise-primary: #f7d94f;
+  --spoonwise-secondary: #1d810a;
+  --spoonwise-light-background: #edeef0;
+  --spoonwise-very-light-background: #f8f8f8;
+  --ion-background-color: #ffffff;
+  --ion-color-step-350: var(--spoonwise-primary);
+  --swiper-theme-color: white;
+  --spoonwise-border-radius: 1rem !important;
+  --spoonwise-large-border-radius: 3.5rem !important;
+}

@@ -1,0 +1,36 @@
+ion-content {
+  --background: var(--spoonwise-primary);
+}
+
+.swiper-container {
+  width: 100vw;
+}
+
+.swiper-slide {
+  display: flex; /* center content inside slide */
+  justify-content: center;
+  align-items: center;
+  background: transparent; /* remove gray background */
+}
+
+/* Ensure the Swiper container takes the desired space */
+.custom-swiper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Image styling for responsiveness and object-fit */
+.swiper-image {
+  width: min(75vw, 300px);
+  height: min(75vw, 360px);
+  object-fit: contain;
+  border-radius: 8px;
+  display: block;
+  margin: 0 auto; /* fallback centering */
+}
+
+.swiper-pagination-horizontal {
+  bottom: 0px !important;
+}

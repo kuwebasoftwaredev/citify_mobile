@@ -1,0 +1,111 @@
+<ion-content fullscreen class="ion-padding" scroll-y="true">
+  <div class="d-flex flex-column gap-2" [formGroup]="variantForm">
+    <!-- Variant Name -->
+    <div class="gs-group-section">
+      <ion-input
+        label="Variant Name"
+        labelPlacement="floating"
+        type="text"
+        inputmode="text"
+        fill="outline"
+        formControlName="name"
+      >
+        @if (
+          variantForm.get("name")?.valid &&
+          (variantForm.get("name")?.touched || variantForm.get("name")?.dirty)
+        ) {
+          <i slot="end" class="bi bi-check-circle-fill text-success"></i>
+        } @else if (
+          variantForm.get("name")?.invalid &&
+          (variantForm.get("name")?.touched || variantForm.get("name")?.dirty)
+        ) {
+          <i slot="end" class="bi bi-exclamation-circle-fill text-danger"></i>
+        }
+      </ion-input>
+
+      <!-- Variant name error -->
+      @if (
+        variantForm.get("name")?.touched && variantForm.get("name")?.invalid
+      ) {
+        <ion-text color="danger">
+          <small>Variant name is required</small>
+        </ion-text>
+      }
+    </div>
+
+    <!-- Options -->
+    <div class="gs-group-section">
+      <div formArrayName="options" class="d-flex flex-column gap-2">
+        <div class="d-flex flex-column gap-2">
+          @for (option of options.controls; let i = $index; track option) {
+            <div>
+              <div class="d-flex gap-2 flex-direction-row align-items-center">
+                <ion-input
+                  label="Option {{ i + 1 }}"
+                  labelPlacement="floating"
+                  type="text"
+                  inputmode="text"
+                  fill="outline"
+                  formControlName="name"
+                  [formControlName]="i"
+                  placeholder="Option {{ i + 1 }}"
+                >
+                  @if (option.touched && option.valid) {
+                    <i
+                      slot="end"
+                      class="bi bi-check-circle-fill text-success"
+                    ></i>
+                  } @else if (option.touched && option.invalid) {
+                    <i
+                      slot="end"
+                      class="bi bi-exclamation-circle-fill text-danger"
+                    ></i>
+                  }
+                </ion-input>
+
+                @if (options.length > 1) {
+                  <ion-button
+                    slot="end"
+                    fill="clear"
+                    color="danger"
+                    size="small"
+                    type="button"
+                    (click)="removeOption(i)"
+                  >
+                    <span class="material-symbols-outlined"> delete </span>
+                  </ion-button>
+                }
+              </div>
+
+              <!-- Option error -->
+              @if (option.touched && option.invalid) {
+                <ion-text color="danger">
+                  <small>Option cannot be empty</small>
+                </ion-text>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="d-flex justify-content-center">
+          <ion-button
+            (click)="addOption()"
+            class="w-50"
+            size="medium"
+            color="light"
+          >
+            <div class="d-flex w-100 align-items-center justify-content-center">
+              <div><i class="bi bi-plus"></i></div>
+              <div>Add Option</div>
+            </div>
+          </ion-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Save Button -->
+    <div class="gs-group-section">
+      <ion-button expand="block" (click)="saveVariant()"> Save </ion-button>
+    </div>
+  </div>
+</ion-content>

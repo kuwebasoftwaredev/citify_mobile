@@ -1,3 +1,39 @@
+// Include theming for Angular Material with `mat.theme()`.
+// This Sass mixin will define CSS variables that are used for styling Angular Material
+// components according to the Material 3 design spec.
+// Learn more about theming and how to use it for your application's
+// custom components at https://material.angular.dev/guide/theming
+@use "@angular/material" as mat;
+
+html {
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$cyan-palette,
+        tertiary: mat.$orange-palette,
+      ),
+      typography: Roboto,
+      density: 0,
+    )
+  );
+}
+
+body {
+  // Default the application to a light color theme. This can be changed to
+  // `dark` to enable the dark color theme, or to `light dark` to defer to the
+  // user's system settings.
+  color-scheme: light;
+
+  // Set a default background, font and text colors for the application using
+  // Angular Material's system-level CSS variables. Learn more about these
+  // variables at https://material.angular.dev/guide/system-variables
+  background-color: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-medium);
+
+  // Reset the user agent margin.
+  margin: 0;
+}
 /*
  * App Global CSS
  * ----------------------------------------------------------------------------
@@ -35,3 +71,224 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import "@ionic/angular/css/palettes/dark.system.css";
+
+@import "swiper/css";
+@import "swiper/css/pagination";
+@import "swiper/css/navigation";
+
+@import "~bootstrap/dist/css/bootstrap.min.css";
+
+ion-header,
+ion-toolbar {
+  --border-width: 0 !important;
+  --box-shadow: none !important;
+  --padding-top: env(safe-area-inset-top);
+  --background: var(--spoonwise-primary) !important;
+  --color: #ffffff;
+  transition: transform 0.85s ease;
+}
+
+// Modal
+ion-modal ion-header,
+ion-modal ion-toolbar {
+  --border-width: 0 !important;
+  --box-shadow: none !important;
+  --padding-top: env(safe-area-inset-top);
+  --background: white !important;
+  --color: #000000 !important;
+  transition: transform 0.85s ease;
+}
+
+// End Modal
+
+ion-input-otp {
+  --border-radius: var(--spoonwise-border-radius);
+}
+
+.native-input.sc-ion-input-otp-md {
+  --border-radius: var(--spoonwise-border-radius);
+}
+.footer-md {
+  box-shadow: none;
+}
+
+ion-content {
+  --ion-padding: 14px;
+  --background: var(--spoonwise-very-light-background);
+}
+
+ion-modal {
+  --border-radius: var(--spoonwise-border-radius);
+}
+
+ion-icon {
+  font-size: x-large;
+}
+
+ion-button {
+  --box-shadow: none;
+  --border-radius: var(--spoonwise-border-radius);
+  height: 46px;
+}
+
+.header-md {
+  box-shadow: none;
+}
+
+ion-item {
+  margin-bottom: 12px; /* this is your gap value */
+}
+
+/* visible state */
+ion-tab-bar {
+  transform: translateY(0); /* back to normal */
+  transition: transform 0.45s ease;
+}
+
+/* hidden state ↓ */
+.hide {
+  ion-tab-bar {
+    transform: translateY(100%); /* slides downward */
+  }
+}
+
+.form-control {
+  border: 0px;
+  line-height: 25px;
+  padding: 10px;
+  width: 100%;
+}
+//Bootstrap utility classes
+.form-control:focus {
+  border-color: #f8da50; /* yellow border */
+  box-shadow: 0 0 0 0.25rem rgba(248, 218, 80, 0.4); /* optional glowing shadow */
+}
+
+.bi {
+  font-size: x-large;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.small-text-size {
+  font-size: 0.9rem;
+  color: var(--ion-color-medium);
+}
+
+ion-label {
+  margin-top: 0px !important;
+}
+
+p {
+  margin: 0;
+}
+
+.gs-custom-form-ui-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 12px 15px;
+  border-radius: var(--spoonwise-border-radius);
+  border: var(--spoonwise-light-background) 1px solid;
+
+  .gs-first-row-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  ion-label {
+    width: 70%;
+  }
+
+  .datetime-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+  }
+}
+.gs-custom-form-ui-container-error {
+  border-radius: var(--spoonwise-border-radius);
+  border: var(--ion-color-danger) 1px solid;
+}
+
+.gs-custom-form-ui-text-error {
+  color: var(--ion-color-danger);
+}
+.gs-custom-form-ui-text-success {
+  color: var(--ion-color-success);
+}
+
+// ion-textarea
+.textarea-fill-outline.sc-ion-textarea-md-h {
+  --border-color: var(--spoonwise-light-background);
+  --border-radius: var(--spoonwise-border-radius) !important;
+}
+
+// ion-input
+.input-fill-outline.sc-ion-input-md-h {
+  --border-color: var(--spoonwise-light-background);
+  --border-radius: var(--spoonwise-border-radius) !important;
+}
+
+// Select
+/* 1. The Container (The actual visible "Button") */
+.select-button-wrapper {
+  position: relative; /* Required for ripple position */
+  overflow: clip; /* Required to clip ripple to border-radius */
+  background: var(--spoonwise-light-background);
+  border-radius: 8px;
+  height: 32px; /* Control your height here */
+  display: inline-flex; /* Changed to inline-flex to hug content */
+  align-items: center;
+  justify-content: center;
+}
+
+/* This targets the placeholder specifically */
+ion-select::part(placeholder) {
+  opacity: 1 !important; /* Override the default 0.5 or 0.6 opacity */
+  font-size: 1rem;
+}
+/* 2. The Select (Make it fill the container but look invisible) */
+ion-select {
+  min-width: 0; /* Allows it to shrink below default Ionic sizes */
+  width: auto; /* Overrides the 100% default */
+  --padding-start: 12px;
+  --padding-end: 12px;
+}
+
+/* 3. Hide internal Ionic background and icons */
+ion-select::part(container) {
+  background: transparent !important; /* Let the wrapper show the color */
+  border: none;
+}
+
+ion-select::part(icon) {
+  display: none !important;
+}
+
+ion-select::part(text) {
+  font-size: 1rem;
+}
+
+// Custom classes
+.gs-group-section {
+  background-color: #ffffff; /* Very Light Green */
+  padding: var(--ion-padding);
+  border-radius: var(--spoonwise-border-radius);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.image {
+  height: auto;
+  object-fit: contain;
+  border-radius: var(--spoonwise-border-radius);
+}

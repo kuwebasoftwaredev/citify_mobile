@@ -1,0 +1,52 @@
+:host .map-container,
+:host #map {
+  height: 100%;
+  width: 100%;
+  display: block;
+  overflow: hidden;
+}
+
+.side-button {
+  background: white;
+  border-radius: 10px;
+  color: #f8da50;
+  padding: 4px;
+  border: none;
+  width: 38px;
+}
+
+::ng-deep .leaflet-control-attribution {
+  bottom: 7px !important;
+  right: 7px !important;
+}
+
+::ng-deep .leaflet-bar a {
+  border-bottom: 0px !important;
+}
+
+::ng-deep .leaflet-bar a.leaflet-disabled {
+  background-color: transparent !important;
+}
+
+::ng-deep .sheet-container {
+  background: transparent !important; /* remove dark overlay */
+  pointer-events: none !important; /* disables backdrop clicks */
+}
+
+::ng-deep .sheet {
+  pointer-events: auto !important; /* keeps sheet content clickable */
+}
+
+::ng-deep .leaflet-right .leaflet-control {
+  margin-top: 45px !important;
+  display: none !important;
+}
+
+::ng-deep .leaflet-top .leaflet-control {
+  margin-top: 45px !important;
+  display: none !important;
+}
+
+::ng-deep #radius-slider {
+  background: #f8da5070 !important;
+}
