@@ -33,9 +33,8 @@ export class CloudinaryService {
   uploadProductGalleryMobile(
     gallery: ReqCloudinaryImageMetadata[],
     productId: string,
+    shopId: string,
   ): Observable<Image[]> {
-    const shopId = '345345345345'; // TODO: get shop ID dynamically
-
     const uploads$ = gallery.map((item: ReqCloudinaryImageMetadata, index) =>
       from(
         Http.uploadFile({
@@ -50,29 +49,42 @@ export class CloudinaryService {
           },
         }),
       ).pipe(
-        map((res: any) => ({
-          id: item.id,
-          order: item.order,
-          src: item.src,
+        map((res: any) => {
+          console.log('Cloudinary upload response:', res);
+          return {
+            id: item.id,
+            order: item.order,
+            src: item.src,
 
-          cloudinary: {
-            publicId: res.public_id,
-            url: res.secure_url,
-          },
-          uploaded: { cloudinary: true, database: false },
-        })),
+            cloudinary: {
+              public_id: res.public_id,
+              url: res.secure_url,
+            },
+            uploaded: { cloudinary: true, database: false },
+          };
+        }),
       ),
     );
 
     return forkJoin(uploads$);
   }
 
+  delete(productId: string, publicIds: string[]): Observable<any> {
+    const url = `${environment.SERVER_URL_CLUSTERS}/cloudinary/delete`;
+    const body = { productId, publicIds };
+
+    return this.http.post(url, body).pipe(
+      catchError((error) => {
+        return throwError(() => error);
+      }),
+    );
+  }
+
   uploadProductGalleryWeb(
     gallery: ReqCloudinaryImageMetadata[],
     productId: string,
+    shopId: string,
   ): Observable<Image[]> {
-    const shopId = '345345345345';
-
     // Step 1: Convert all blobs to File objects
     const blobPromises = gallery.map((img: ReqCloudinaryImageMetadata) =>
       this.imageService.blobUrlToBlob(img.src).then((blob) => ({
@@ -94,7 +106,7 @@ export class CloudinaryService {
           formData.append('upload_preset', 'ionic_products');
           formData.append(
             'folder',
-            `citify/shops/${shopId}/${productId}/gallery`,
+            `citify/shops/${shopId}/products/${productId}/gallery`,
           );
           formData.append('context', `order=${item.order}`);
 
@@ -116,7 +128,7 @@ export class CloudinaryService {
                   order: item.order,
                   src: item.src,
                   cloudinary: {
-                    publicId: res.public_id,
+                    public_id: res.public_id,
                     url: res.secure_url,
                   },
                   uploaded: { cloudinary: true, database: false },
@@ -137,6 +149,104 @@ export class CloudinaryService {
         );
       }),
     );
+  }
+
+  uploadProductSKUThumbnailsWeb(
+    sku: any[],
+    productId: string,
+    shopId: string,
+  ): any {
+    // Step 1: Convert all blobs to File objects
+    const blobPromises = sku.map((sku: any) =>
+      this.imageService.blobUrlToBlob(sku.image?.copy?.src).then((blob) => ({
+        blob,
+        src: sku.image?.copy?.src,
+        combination: sku.combination,
+      })),
+    );
+
+    // Step 2: Wait for all blobs and return Observable
+    return from(Promise.all(blobPromises)).pipe(
+      switchMap((sku) => {
+        const uploads$ = sku.map((sku: any) => {
+          const formData = new FormData();
+
+          formData.append('file', sku.blob);
+          formData.append('filename_override', JSON.stringify(sku.combination));
+          formData.append('upload_preset', 'ionic_products');
+          formData.append(
+            'folder',
+            `citify/shops/${shopId}/products/${productId}/sku`,
+          );
+
+          return this.http
+            .post<any>(
+              'https://api.cloudinary.com/v1_1/dvgac4hr2/image/upload',
+              formData,
+            )
+            .pipe(
+              map((res) => {
+                return {
+                  combination: sku.combination,
+                  src: sku?.image?.src,
+                  cloudinary: {
+                    public_id: res.public_id,
+                    url: res.secure_url,
+                  },
+                  uploaded: { cloudinary: true, database: false },
+                };
+              }),
+              catchError((err) => {
+                console.warn(
+                  `SKU Thumbnail upload failed for ${sku.combination}:`,
+                  err,
+                );
+                return of(null); // emit null for failed uploads
+              }),
+            );
+        });
+
+        return forkJoin(uploads$).pipe(
+          map((results) => results.filter((res) => res !== null)), // only success
+        );
+      }),
+    );
+  }
+
+  uploadProductSKUThumbnailsMobile(
+    sku: any[],
+    productId: string,
+    shopId: string,
+  ): any {
+    const uploads$ = sku.map((sku: any, index) =>
+      from(
+        Http.uploadFile({
+          url: 'https://api.cloudinary.com/v1_1/dvgac4hr2/image/upload',
+          filePath: sku.image?.copy?.src,
+          name: 'file',
+          data: {
+            upload_preset: 'ionic_products',
+            folder: `citify/shops/${shopId}/products/${productId}/sku`,
+            filename_override: JSON.stringify(sku.combination),
+          },
+        }),
+      ).pipe(
+        map((res: any) => {
+          console.log('Cloudinary upload response:', res);
+          return {
+            combination: sku.combination,
+            src: sku.image?.copy?.src,
+            cloudinary: {
+              public_id: res.public_id,
+              url: res.secure_url,
+            },
+            uploaded: { cloudinary: true, database: false },
+          };
+        }),
+      ),
+    );
+
+    return forkJoin(uploads$);
   }
 
   isNative() {

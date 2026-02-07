@@ -95,7 +95,7 @@ export class VariantFormComponent implements OnInit {
     this.variantForm.markAllAsTouched();
 
     if (this.variantForm.invalid) {
-      this.formErrors = this.formService.getFormErrorMessages(
+      this.formErrors = this.formService.checkForm(
         this.variantForm,
         this.errorFormName,
       );

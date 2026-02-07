@@ -125,7 +125,7 @@
 
           <div class="small-text-size">
             <p>
-              Photos ({{ copies.length }}/3) Add up to 3 photos. <br />
+              Photos ({{ copies.length }}/6) Add up to 6 photos. <br />
               Drag to reorder. The first photo will be your thumbnail.
             </p>
           </div>
@@ -286,34 +286,34 @@
           <div class="select-button-wrapper ion-activatable">
             <ion-ripple-effect></ion-ripple-effect>
             <ion-select
-              formControlName="publishStatus"
+              formControlName="publishingType"
               aria-label="Fruit"
               interface="action-sheet"
               placeholder="Select fruit"
               justify="end"
               mode="ios"
             >
-              <ion-select-option value="1"
+              <ion-select-option value="INSTANT"
                 >Publish Right Away</ion-select-option
               >
-              <ion-select-option value="2"
+              <ion-select-option value="SCHEDULED"
                 >Set Schedule Date
               </ion-select-option>
             </ion-select>
           </div>
 
-          @if( productForm.get('publishStatus')?.valid &&
-          (productForm.get('publishStatus')?.touched ||
-          productForm.get('publishStatus')?.dirty)) {
+          @if( productForm.get('publishingType')?.valid &&
+          (productForm.get('publishingType')?.touched ||
+          productForm.get('publishingType')?.dirty)) {
           <i slot="end" class="bi bi-check-circle-fill text-success"></i>
-          }@else if(productForm.get('publishStatus')?.invalid &&
-          (productForm.get('publishStatus')?.touched ||
-          productForm.get('publishStatus')?.dirty)){
+          }@else if(productForm.get('publishingType')?.invalid &&
+          (productForm.get('publishingType')?.touched ||
+          productForm.get('publishingType')?.dirty)){
           <i slot="end" class="bi bi-exclamation-circle-fill text-danger"></i>
           }
         </div>
 
-        @if(productForm.get('publishStatus')?.value === '2') {
+        @if(productForm.get('publishingType')?.value === 'SCHEDULED') {
         <div>
           <div class="gs-first-row-container">
             <div class="datetime-wrapper">
@@ -731,16 +731,17 @@
     </div>
 
     <!-- Product Form Error Summary -->
-    @if(productForm.invalid && isProductFormSubmitted) {
+    @if (productForm.invalid && isProductFormSubmitted) {
     <div class="gs-group-section">
       <div class="error-summary">
         <div class="error-header">
           <ion-text>
-            <strong
-              >Almost there! Please review and correct the fields below.</strong
-            >
+            <strong>
+              Almost there! Please review and correct the fields below.
+            </strong>
           </ion-text>
         </div>
+
         <div class="form-errors">
           @for (group of groupedErrors; track group.control) {
           <div class="error-group">
@@ -771,7 +772,7 @@
         </div>
         <div>
           <ion-button
-            (click)="uploadProductGalleryAPI(productId)"
+            (click)="uploadProductGalleryAPI(productId, '')"
             size="medium"
             expand="block"
             >Re-upload Images</ion-button
@@ -796,7 +797,14 @@
     <!-- Product Form Buttons -->
     <div class="gs-group-section">
       <div class="d-flex flex-column">
-        <div class="d-flex flex-column gap-1 w-100 text-center pb-2">
+        <ion-button (click)="saveAsDraft()" size="medium" expand="block"
+          >Save as draft</ion-button
+        >
+        <ion-button (click)="saveProduct()" size="medium" expand="block"
+          >Save</ion-button
+        >
+
+        <div class="d-flex flex-column gap-1 w-100 text-center pt-2">
           <ion-text>
             By publishing this product, you confirm that it complies with
             <ion-text color="primary" (click)="openTerms('marketplace')"
@@ -808,12 +816,6 @@
             >.
           </ion-text>
         </div>
-        <ion-button (click)="saveAsDraft()" size="medium" expand="block"
-          >Save as draft</ion-button
-        >
-        <ion-button (click)="saveProduct()" size="medium" expand="block"
-          >Save</ion-button
-        >
       </div>
     </div>
   </div>
