@@ -49,6 +49,8 @@ interface IVariantCombination {
 export interface SKUImage {
   original: { src: string; id: string };
   copy: { src: string; id: string };
+  uploaded: { cloudinary: boolean; database: boolean };
+  cloudinary: { public_id: string; url: string };
 }
 
 @Component({
@@ -87,6 +89,7 @@ export class SkuFormComponent implements OnInit {
     stock: 'Stock',
   };
   public imageSKU!: SKUImage;
+
   public isSKUFormSubmitted: boolean = false;
   public variantCombinations: IVariantCombination[] = [];
 
@@ -106,12 +109,14 @@ export class SkuFormComponent implements OnInit {
     this.imageSKU = {
       original: { src: '', id: '' },
       copy: { src: '', id: '' },
+      uploaded: { cloudinary: false, database: false },
+      cloudinary: { public_id: '', url: '' },
     };
   }
 
   ngOnInit() {
     this.generateVariantCombinations();
-
+    console.log('this.initialData', this.initialData);
     if (this.initialData) {
       this.patchSKU(this.initialData);
 
@@ -141,7 +146,6 @@ export class SkuFormComponent implements OnInit {
     if (this.SKUForm.invalid) {
       this.updateFormErrors();
 
-      console.log('Form Errors', this.SKUformErrors);
       return;
     }
 
@@ -185,7 +189,7 @@ export class SkuFormComponent implements OnInit {
   }
 
   updateFormErrors() {
-    this.SKUformErrors = this.formService.getFormErrorMessages(
+    this.SKUformErrors = this.formService.checkForm(
       this.SKUForm,
       this.SKULabelMap,
     );
@@ -195,6 +199,8 @@ export class SkuFormComponent implements OnInit {
     this.imageSKU = {
       original: { src: '', id: '' },
       copy: { src: '', id: '' },
+      uploaded: { cloudinary: false, database: false },
+      cloudinary: { public_id: '', url: '' },
     };
 
     this.syncImagesToForm();
@@ -202,7 +208,6 @@ export class SkuFormComponent implements OnInit {
   }
 
   openCropper() {
-    console.log('this.imageSKU', this.imageSKU);
     if (!this.imageSKU.original.src) {
       return;
     }
@@ -210,6 +215,13 @@ export class SkuFormComponent implements OnInit {
       .openCropper(this.imageSKU.original)
       .subscribe((result) => {
         this.imageSKU.copy.src = result.src;
+
+        this.imageSKU = {
+          ...this.imageSKU,
+          copy: { ...this.imageSKU.copy, src: result.src },
+          uploaded: { cloudinary: false, database: false },
+          cloudinary: { public_id: '', url: '' },
+        };
       });
   }
 

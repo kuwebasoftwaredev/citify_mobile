@@ -19,7 +19,7 @@ export interface Image {
   src: string;
   id: string;
   cloudinary: {
-    publicId: string;
+    public_id: string;
     url: string;
   };
   uploaded: {
@@ -75,7 +75,7 @@ export class ImageService {
           src: image.src,
 
           cloudinary: {
-            publicId: '',
+            public_id: '',
             url: '',
           },
           uploaded: { cloudinary: false, database: false },
@@ -86,7 +86,7 @@ export class ImageService {
           COPIES.push({
             src: image.src,
             cloudinary: {
-              publicId: '',
+              public_id: '',
               url: '',
             },
             uploaded: { cloudinary: false, database: false },
@@ -101,7 +101,7 @@ export class ImageService {
         ORIGINALS.push({
           src: image.src,
           cloudinary: {
-            publicId: '',
+            public_id: '',
             url: '',
           },
           uploaded: { cloudinary: false, database: false },
@@ -113,7 +113,7 @@ export class ImageService {
           ORIGINALS.push({
             src: image.src,
             cloudinary: {
-              publicId: '',
+              public_id: '',
               url: '',
             },
             uploaded: { cloudinary: false, database: false },
@@ -146,6 +146,17 @@ export class ImageService {
       config.copy.id = id;
       config.original.id = id;
       config.original.src = image.src;
+      config = {
+        ...config,
+        uploaded: {
+          cloudinary: false,
+          database: false,
+        },
+        cloudinary: {
+          public_id: '',
+          url: '',
+        },
+      };
 
       if (image.width === image.height) {
         config.copy.src = image.src;
@@ -203,7 +214,7 @@ export class ImageService {
       ORIGINALS.push({
         src: imagesWithSize.src,
         cloudinary: {
-          publicId: '',
+          public_id: '',
           url: '',
         },
         uploaded: { cloudinary: false, database: false },
@@ -214,7 +225,7 @@ export class ImageService {
         COPIES.push({
           src: imagesWithSize.src,
           cloudinary: {
-            publicId: '',
+            public_id: '',
             url: '',
           },
           uploaded: { cloudinary: false, database: false },
@@ -229,7 +240,7 @@ export class ImageService {
       ORIGINALS.push({
         src: imagesWithSize.src,
         cloudinary: {
-          publicId: '',
+          public_id: '',
           url: '',
         },
         uploaded: { cloudinary: false, database: false },
@@ -241,7 +252,7 @@ export class ImageService {
         COPIES.push({
           src: imagesWithSize.src,
           cloudinary: {
-            publicId: '',
+            public_id: '',
             url: '',
           },
           uploaded: { cloudinary: false, database: false },
@@ -315,7 +326,7 @@ export class ImageService {
     return {
       src: imgSrc,
       cloudinary: {
-        publicId: '',
+        public_id: '',
         url: '',
       },
       uploaded: { cloudinary: false, database: false },

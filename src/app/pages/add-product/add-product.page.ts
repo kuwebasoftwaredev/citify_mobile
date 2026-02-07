@@ -46,7 +46,8 @@ import { ImageEmbedService } from 'src/app/core/services/transformer/image-embed
 import { TextEmbedService } from 'src/app/core/services/transformer/text-embed/text-embed';
 import { HttpRequest } from 'src/app/core/services/http-request/http-request.service';
 import { CloudinaryService } from 'src/app/core/services/cloudinary/cloudinary.service';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, forkJoin, from, map, of, switchMap, tap } from 'rxjs';
+import { ProductService } from 'src/app/core/services/product/product.service';
 
 type GroupedError = {
   control: string;
@@ -62,6 +63,8 @@ export interface Variant {
 export interface SemanticImage {
   original: { src: string; id: string };
   copy: { src: string; id: string };
+  uploaded: { cloudinary: boolean; database: boolean };
+  cloudinary: { public_id: string; url: string };
 }
 
 export interface ReqCloudinaryImageMetadata {
@@ -102,6 +105,7 @@ export class AddProductPage {
     private imageEmbedService: ImageEmbedService,
     private textEmbedService: TextEmbedService,
     private cloudinaryService: CloudinaryService,
+    private productService: ProductService,
   ) {
     this.createProductForm();
   }
@@ -121,7 +125,7 @@ export class AddProductPage {
 
   updateFormErrors(type: 'product' | 'sku' = 'product') {
     if (type === 'product') {
-      this.productFormErrors = this.formService.getFormErrorMessages(
+      this.productFormErrors = this.formService.checkForm(
         this.productForm,
         this.productLabelMap,
       );
@@ -131,10 +135,10 @@ export class AddProductPage {
   createProductForm() {
     this.productForm = this.fb.group(
       {
-        images: [[], [Validators.required, Validators.maxLength(3)]],
+        images: [[], [Validators.required, Validators.maxLength(6)]],
         productName: ['', Validators.required],
         description: ['', Validators.required],
-        publishStatus: ['2', Validators.required],
+        publishingType: ['SCHEDULED', Validators.required],
         category: [[], Validators.required],
         subcategory: [[], Validators.required],
         scheduledDate: [
@@ -145,19 +149,22 @@ export class AddProductPage {
         variants: this.fb.array(
           [
             { name: 'color', options: ['red', 'blue', 'green'] },
-            { name: 'size', options: ['small', 'medium', 'large'] },
-            { name: 'brand', options: ['adidas', 'nike', 'underarmor'] },
+            // { name: 'color', options: ['red', 'blue', 'green'] },
+            // { name: 'size', options: ['small', 'medium', 'large'] },
+            // { name: 'brand', options: ['adidas', 'nike', 'underarmor'] },
           ],
           [Validators.required],
         ),
         skus: this.fb.array([], [Validators.required]),
         semanticSearch: this.fb.group({
           image: this.fb.group({
-            src: ['', Validators.required],
-            embedded: [[], Validators.required],
+            hasSemanticSearch: [true, Validators.requiredTrue],
+            src: [''],
+            embedded: [[]],
           }),
           text: this.fb.group({
-            embedded: [[], Validators.required],
+            hasSemanticSearch: [true, Validators.requiredTrue],
+            embedded: [[]],
           }),
         }),
       },
@@ -179,9 +186,6 @@ export class AddProductPage {
     this.semanticImageFormControl?.markAsTouched();
     this.semanticImageFormControl?.updateValueAndValidity();
   }
-
-  // Set the default value to 'schedule'
-  publishStatus: string = '2';
 
   onScheduleChange(event: any) {
     const isoDate = event.detail.value;
@@ -279,7 +283,9 @@ export class AddProductPage {
   }
 
   drop(event: any) {
+    console.log('drop');
     moveItemInArray(this.copies, event.previousIndex, event.currentIndex);
+    this.isGalleryOrderChanged = true;
     this.syncImagesToForm();
     this.updateFormErrors();
   }
@@ -308,10 +314,11 @@ export class AddProductPage {
     }
 
     this.imageService.openCropper(image).subscribe((result) => {
-      // API call for deleting the previous image using result.id  in cloudinary
-      const publicIdToDelete = this.copies.find((copy) => copy.id === result.id)
-        ?.cloudinary.publicId;
-      console.log('publicIdToDeleteeeee', publicIdToDelete);
+      const publicId = this.copies.find((copy) => copy.id === result.id)
+        ?.cloudinary.public_id;
+
+      // Push the publicId into the publicIdCloudinary array
+      if (publicId) this.publicIdCloudinaryForRemoval.push(publicId);
 
       this.updateImage(result.src, result.id, 'product');
     });
@@ -364,30 +371,121 @@ ${price ? `The price is ${price} pesos.` : ''}
 `;
   }
 
-  public isUploadGalleryTriggered = false;
-  async uploadProductGalleryAPI(productId: string): Promise<Image[]> {
+  public isUploadSKUThumbnailTriggered = false;
+  async uploadProductSKUThumbnailsAPI(
+    productId: string,
+    shopId: string,
+  ): Promise<Image[]> {
     try {
-      const isAllUploaded = this.copies.every((img) => img.uploaded.cloudinary);
-      console.log('1');
+      const isAllUploaded = this.skus.value.every(
+        (sku: any) => sku.image?.uploaded?.cloudinary,
+      );
+
       if (isAllUploaded) {
         return [];
       }
-      console.log('2');
-      const gallery: ReqCloudinaryImageMetadata[] = this.copies
-        .filter((img: Image) => !img.uploaded?.cloudinary)
-        .map((img: Image, index: number) => ({
-          src: img.src,
-          order: index,
-          id: img.id,
-        }));
+
+      await this.deleteMarkedCloudinaryImages();
+
+      const sku: any[] = this.skus.value.filter(
+        (sku: any) => !sku.image?.uploaded?.cloudinary,
+      );
+
+      if (_.size(sku) === 0) {
+        return [];
+      }
 
       const upload$ = this.cloudinaryService.isNative()
-        ? this.cloudinaryService.uploadProductGalleryMobile(gallery, productId)
-        : this.cloudinaryService.uploadProductGalleryWeb(gallery, productId);
-      console.log('4', upload$);
+        ? this.cloudinaryService.uploadProductSKUThumbnailsMobile(
+            sku,
+            productId,
+            shopId,
+          )
+        : this.cloudinaryService.uploadProductSKUThumbnailsWeb(
+            sku,
+            productId,
+            shopId,
+          );
+      const cloudinaryUploads: any[] = await firstValueFrom(upload$);
+
+      // Update copies to mark uploaded images
+      const updateSKU = this.skus.value.map((sku: any) => {
+        // Check if this copy was uploaded
+        const cloudinary = cloudinaryUploads.find((res) =>
+          _.isEqual(res.combination, sku.combination),
+        );
+
+        if (cloudinary) {
+          // Mark as uploaded
+          return {
+            ...sku,
+            image: {
+              ...sku.image,
+              cloudinary: {
+                public_id: cloudinary.cloudinary.public_id,
+                url: cloudinary.cloudinary.url,
+              },
+              uploaded: { cloudinary: true, database: false },
+            },
+          };
+        } else {
+          return { ...sku };
+        }
+      });
+      this.skus.patchValue(updateSKU);
+
+      this.syncImagesToForm();
+      this.isUploadSKUThumbnailTriggered = true;
+
+      return cloudinaryUploads;
+    } catch (error) {
+      console.error('Error uploading product sku thumbnail:', error);
+      return [];
+    }
+  }
+
+  public isUploadGalleryTriggered = false;
+  async uploadProductGalleryAPI(
+    productId: string,
+    shopId: string,
+  ): Promise<Image[]> {
+    try {
+      const isAllUploaded = this.copies.every((img) => img.uploaded.cloudinary);
+
+      if (isAllUploaded) {
+        return [];
+      }
+
+      await this.deleteMarkedCloudinaryImages();
+
+      const gallery: ReqCloudinaryImageMetadata[] = this.copies
+        .map((img: Image, index: number) =>
+          img.uploaded?.cloudinary
+            ? null
+            : {
+                src: img.src,
+                order: index,
+                id: img.id,
+              },
+        )
+        .filter(Boolean) as ReqCloudinaryImageMetadata[];
+
+      if (_.size(gallery) === 0) {
+        return [];
+      }
+
+      const upload$ = this.cloudinaryService.isNative()
+        ? this.cloudinaryService.uploadProductGalleryMobile(
+            gallery,
+            productId,
+            shopId,
+          )
+        : this.cloudinaryService.uploadProductGalleryWeb(
+            gallery,
+            productId,
+            shopId,
+          );
       const cloudinaryUploads = await firstValueFrom(upload$);
-      console.log('5');
-      console.log('cloudinaryUploads', cloudinaryUploads);
 
       // Update copies to mark uploaded images
       this.copies = this.copies.map((copy: Image) => {
@@ -398,9 +496,8 @@ ${price ? `The price is ${price} pesos.` : ''}
           // Mark as uploaded
           return {
             ...copy,
-
             cloudinary: {
-              publicId: cloudinary.cloudinary.publicId,
+              public_id: cloudinary.cloudinary.public_id,
               url: cloudinary.cloudinary.url,
             },
             uploaded: { cloudinary: true, database: false },
@@ -413,102 +510,236 @@ ${price ? `The price is ${price} pesos.` : ''}
       this.syncImagesToForm();
       this.isUploadGalleryTriggered = true;
 
-      console.log('this.copies:after', this.copies);
-
       return cloudinaryUploads;
     } catch (error) {
       console.error('Error uploading product gallery:', error);
       return [];
     }
   }
-
   get someGalleryImagesNotUploadedInCloudinary() {
     return this.copies.some((copy) => !copy.uploaded.cloudinary);
   }
-  public productId: string = '05586564854575';
-  async saveProduct() {
-    console.log('this.copies:before', this.copies);
 
-    // Cloudinary Upload
+  public productId!: string;
+  public shopId!: string;
+  public publicIdCloudinaryForRemoval: string[] = [];
+  public status = 'PRESAVED';
+  public isGalleryOrderChanged = false;
 
-    const productGallery: Image[] = await this.uploadProductGalleryAPI(
-      this.productId,
+  private async deleteMarkedCloudinaryImages() {
+    if (_.size(this.publicIdCloudinaryForRemoval) === 0) return;
+
+    await firstValueFrom(
+      this.cloudinaryService.delete(
+        this.productId,
+        this.publicIdCloudinaryForRemoval,
+      ),
     );
+  }
 
-    return;
-
+  async saveProduct() {
     // Check if form is valid
     this.isProductFormSubmitted = true;
     this.productForm.markAllAsTouched();
 
     // Update form errors
-    this.productFormErrors = this.formService.getFormErrorMessages(
+    this.productFormErrors = this.formService.checkForm(
       this.productForm,
       this.productLabelMap,
     ) as any;
 
+    // Check if form is valid
     if (this.productForm.invalid) return;
 
-    //  Generate image embedding (Float32Array ~2.3 MB)
-    const imageVector = await this.imageEmbedService.embedImage(
-      this.productForm.get('semanticSearch.image.src')?.value,
-    );
+    if (!this.productId) {
+      //  Generate image embedding (Float32Array ~2.3 MB)
+      const imageVector = await this.imageEmbedService.embedImage(
+        this.productForm.get('semanticSearch.image.src')?.value,
+      );
 
-    // Set image embedding to form control
-    this.productForm
-      .get('semanticSearch.image.embedded')
-      ?.setValue(imageVector);
+      // Set image embedding to form control
+      this.productForm
+        .get('semanticSearch.image.embedded')
+        ?.setValue(imageVector);
 
-    // Build SKU summary text for text embedding
-    const skuSummary = this.productForm.value.skus.map((sku: any) => {
-      return this.buildSkuEmbeddingText(sku.combination, sku.price);
-    });
+      // Build SKU summary text for text embedding
+      const skuSummary = this.productForm.value.skus.map((sku: any) => {
+        return this.buildSkuEmbeddingText(sku.combination, sku.price);
+      });
 
-    // Generate text embedding (Float32Array ~3 KB)
-    const textVector = await this.textEmbedService.embed(
-      `Product name: ${this.productForm.value.productName}.
-    Description: ${this.productForm.value.description}.
-    Category: ${this.productForm.value.category.join(', ')}.
-    Subcategory: ${this.productForm.value.subcategory.join(', ')}.
-    Variants: ${this.productForm.value.variants
-      .map((v: any) => `${v.name} options: ${v.options?.join(', ')}`)
-      .join('; ')}.
-    SKU Details: ${skuSummary.join(' ')}
-    `.trim(),
-    );
+      // Generate text embedding (Float32Array ~3 KB)
+      const textVector = await this.textEmbedService.embed(
+        `Product name: ${this.productForm.value.productName}.
+         Description: ${this.productForm.value.description}.
+         Category: ${this.productForm.value.category.join(', ')}.
+         Subcategory: ${this.productForm.value.subcategory.join(', ')}.
+         Variants: ${this.productForm.value.variants
+           .map(
+             (v: any) => `${v.name} 
+         options: ${v.options?.join(', ')}`,
+           )
+           .join('; ')}.SKU Details: ${skuSummary.join(' ')}`.trim(),
+      );
 
-    // Set text embedding to form control
-    this.productForm.get('semanticSearch.text.embedded')?.setValue(textVector);
+      // Set text embedding to form control
+      this.productForm
+        .get('semanticSearch.text.embedded')
+        ?.setValue(textVector);
 
-    // Data to be sent to backend
-    const productData = {
-      productName: this.productForm.value.productName,
-      description: this.productForm.value.description,
-      category: this.productForm.value.category,
-      subcategory: this.productForm.value.subcategory,
-      publishStatus: this.productForm.value.publishStatus,
-      scheduledDate: this.productForm.value.scheduledDate,
-      hasVariants: this.productForm.value.hasVariants,
-      variants: this.productForm.value.variants,
-      skus: this.normalizeSKUImage(this.productForm.value.skus),
-      textEmbedding: Array.from(textVector),
-    };
+      // Data to be sent to backend
+      const productData = {
+        gallery: this.productForm.value.gallery,
+        name: this.productForm.value.productName,
+        status: this.status,
+        description: this.productForm.value.description,
+        category: this.productForm.value.category,
+        subcategory: this.productForm.value.subcategory,
+        publishingType: this.productForm.value.publishingType,
+        scheduledDate: this.productForm.value.scheduledDate,
+        textEmbedding: Array.from(textVector),
+        imageEmbedding: Array.from(imageVector),
+        skus: this.normalizeSKUImage(this.productForm.value.skus),
+        hasVariants: this.productForm.value.hasVariants,
+        variants: this.productForm.value.variants,
+      };
 
-    const formData = new FormData();
+      // Product pre-saved
+      this.productService
+        .saveProductWeb(productData)
+        .pipe(
+          switchMap((response: any) => {
+            const saveProductResponse = response.data;
+            this.productId = saveProductResponse?.product?._id;
+            this.shopId = saveProductResponse?.product?.shopId;
 
-    formData.append(
-      'imageEmbedding',
-      new Blob([new Float32Array(imageVector).buffer], {
-        type: 'application/octet-stream',
-      }),
-    );
-    formData.append('data', JSON.stringify(productData));
+            if (_.size(this.gallery) === 0) {
+              return of(response);
+            }
+
+            return forkJoin({
+              gallery: this.uploadProductGalleryAPI(
+                this.productId,
+                this.shopId,
+              ),
+              skuThumbnails: this.uploadProductSKUThumbnailsAPI(
+                this.productId,
+                this.shopId,
+              ),
+            }).pipe(
+              map((response) => ({
+                saveProductResponse,
+                response,
+              })),
+            );
+          }),
+
+          // After gallery upload, update the product with the Cloudinary URLs
+          switchMap((result: any) => {
+            // Check if there are any image in gallery that has not been uploaded in database
+            const gallery = this.copies
+              .filter(
+                (img) => img.uploaded?.cloudinary && !img.uploaded?.database,
+              )
+              .map(({ src, ...otherProps }, index) => ({
+                ...otherProps,
+                order: index,
+                uploaded: { cloudinary: true, database: true },
+              }));
+
+            const skus = this.skus.value
+              .filter(
+                (sku: any) =>
+                  sku.image.uploaded?.cloudinary &&
+                  !sku.image.uploaded?.database,
+              )
+              .map((sku: any) => ({
+                ...sku,
+                image: {
+                  ...sku.image,
+                  uploaded: {
+                    ...sku.image.uploaded,
+                    database: true,
+                  },
+                },
+              }));
+            console.log('--------------skus', skus);
+
+            if (_.size(gallery) === 0 && _.size(skus) === 0) return of(result);
+
+            const prop: any = {
+              ...(_.size(gallery) && { gallery }),
+              ...(_.size(skus) && { skus }),
+            };
+
+            console.log('prop', prop);
+
+            return this.productService
+              .updateProductWeb(this.productId, prop)
+              .pipe(
+                tap((response: any) => {
+                  const public_ids = response.data.gallery.map(
+                    (img: any) => img.cloudinary?.public_id,
+                  );
+
+                  this.copies = this.copies.map((copy) => {
+                    if (public_ids.includes(copy.cloudinary?.public_id)) {
+                      return {
+                        ...copy,
+                        uploaded: {
+                          ...copy.uploaded,
+                          database: true,
+                        },
+                      };
+                    }
+                    return copy;
+                  });
+                }),
+              );
+          }),
+        )
+        .subscribe({
+          next: (finalResult) => {
+            console.log('Product saved successfully:', finalResult);
+            console.log('this.copies', this.copies);
+
+            // Handle success (e.g., show a success message, navigate away, etc.)
+          },
+          error: (error) => {
+            console.error('Error saving product:', error);
+            // Handle error (e.g., show an error message)
+          },
+        });
+    } else {
+      console.log('PRODUCT UPDATE!');
+      // Cloudinary Upload
+
+      // Upload gallery
+      from(this.uploadProductGalleryAPI(this.productId, this.shopId)).pipe(
+        map((uploadedImages) => ({
+          uploadedImages,
+        })),
+      );
+
+      // this.isGalleryOrderChanged = true;
+
+      // Compare if it has changes from the original data
+      // If yes, proceed to update
+      // If no, skip the update
+    }
   }
 
   normalizeSKUImage(sku: any) {
-    return sku.map((sku: any) => {
-      return { ...sku, image: sku.image?.copy?.src };
-    });
+    console.log('sku', sku);
+    return sku.map((sku: any) => ({
+      ...sku,
+      image: {
+        cloudinary: {
+          url: sku.image?.secure_url,
+          public_id: '',
+        },
+      },
+      uploaded: { cloudinary: false, database: false },
+    }));
   }
 
   get errorKeys(): string[] {
@@ -550,6 +781,9 @@ ${price ? `The price is ${price} pesos.` : ''}
     this.clearSKUsCombination();
   }
   removeSKU(index: number) {
+    const publicId = this.skus.at(index).value?.image?.cloudinary?.public_id;
+    // Push the publicId into the publicIdCloudinary array
+    if (!_.isNil(publicId)) this.publicIdCloudinaryForRemoval.push(publicId);
     this.skus.removeAt(index);
   }
   get variants(): FormArray {
@@ -558,6 +792,10 @@ ${price ? `The price is ${price} pesos.` : ''}
 
   get skus(): FormArray {
     return this.productForm.get('skus') as FormArray;
+  }
+
+  get gallery(): Image[] {
+    return this.productForm.get('images')?.value;
   }
 
   public tempSKUFormId!: number;
@@ -575,6 +813,7 @@ ${price ? `The price is ${price} pesos.` : ''}
         initialData: !_.isNil(i) ? this.skus.at(i).value : null,
       },
     });
+
     await modal.present();
 
     // Get the component instance
@@ -600,26 +839,24 @@ ${price ? `The price is ${price} pesos.` : ''}
   }
 
   get groupedErrors(): GroupedError[] {
-    const result: GroupedError[] = [];
-
-    Object.keys(this.productForm.controls).forEach((controlName) => {
-      const value = this.productFormErrors[controlName];
-
-      if (Array.isArray(value) && value.length) {
-        result.push({
-          control: controlName,
-          label: this.productLabelMap[controlName] ?? controlName,
-          messages: value,
-        });
-      }
-    });
-
-    return result;
+    return this.formService.getFormErrorMessages(
+      this.productForm,
+      this.productLabelMap,
+      this.productFormErrors,
+    );
   }
 
   public semanticImage: SemanticImage = {
     original: { src: '', id: '' },
     copy: { src: '', id: '' },
+    uploaded: {
+      cloudinary: false,
+      database: false,
+    },
+    cloudinary: {
+      public_id: '',
+      url: '',
+    },
   };
 
   get semanticImageFormControl(): FormControl {
@@ -650,6 +887,8 @@ ${price ? `The price is ${price} pesos.` : ''}
     this.semanticImage = {
       original: { src: '', id: '' },
       copy: { src: '', id: '' },
+      uploaded: { cloudinary: false, database: false },
+      cloudinary: { public_id: '', url: '' },
     };
 
     this.syncImagesToForm();

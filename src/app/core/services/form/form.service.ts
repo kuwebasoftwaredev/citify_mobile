@@ -1,5 +1,10 @@
 import { Injectable } from '@angular/core';
-import { AbstractControl, FormArray, FormGroup } from '@angular/forms';
+import {
+  AbstractControl,
+  FormArray,
+  FormControl,
+  FormGroup,
+} from '@angular/forms';
 export type FormErrorMap = {
   [key: string]: string[] | FormErrorMap;
 };
@@ -9,21 +14,25 @@ interface FormLevelErrorConfig {
   mapTo: string;
   message: (labels: Record<string, string>) => string;
 }
-
+type GroupedError = {
+  control: string;
+  label: string;
+  messages: string[];
+};
 @Injectable({
   providedIn: 'root',
 })
 export class FormService {
   constructor() {}
 
-  getFormErrorMessages(
+  checkForm(
     control: AbstractControl,
     labelMap: Record<string, string> = {},
     controlKey: string = '',
   ): FormErrorMap {
     const errors: FormErrorMap = {};
     const label = labelMap[controlKey] || controlKey || 'Field';
-    const FORM_LEVEL_ERROR_MAP: FormLevelErrorConfig[] = [
+    const FORMGROUP_LEVEL_ERROR_MAP: FormLevelErrorConfig[] = [
       {
         errorKey: 'variantsRequired',
         mapTo: 'variants',
@@ -54,7 +63,7 @@ export class FormService {
 
     // 🔵 FORM-GROUP LEVEL ERRORS (ROOT ONLY)
     if (control instanceof FormGroup && controlKey === '') {
-      FORM_LEVEL_ERROR_MAP.forEach((config) => {
+      FORMGROUP_LEVEL_ERROR_MAP.forEach((config) => {
         if (control.hasError(config.errorKey)) {
           const target = config.mapTo;
 
@@ -72,7 +81,7 @@ export class FormService {
     // 2️⃣ Handle FormGroup
     if (control instanceof FormGroup) {
       Object.keys(control.controls).forEach((key) => {
-        const childErrors = this.getFormErrorMessages(
+        const childErrors = this.checkForm(
           control.controls[key],
           labelMap,
           key,
@@ -87,11 +96,7 @@ export class FormService {
     // 3️⃣ Handle FormArray
     if (control instanceof FormArray) {
       control.controls.forEach((child, index) => {
-        const childErrors = this.getFormErrorMessages(
-          child,
-          labelMap,
-          `${index}`,
-        );
+        const childErrors = this.checkForm(child, labelMap, `${index}`);
 
         if (Object.keys(childErrors).length) {
           errors[index] = childErrors;
@@ -100,5 +105,64 @@ export class FormService {
     }
 
     return errors;
+  }
+
+  getFormErrorMessages(
+    form: FormGroup,
+    labelMap: Record<string, string>,
+    productFormErrors: FormErrorMap,
+  ): GroupedError[] {
+    let result: GroupedError[] = [];
+
+    const walk = (control: any, path = '') => {
+      if (!control) return;
+
+      // FormGroup
+      if (control instanceof FormGroup) {
+        Object.keys(control.controls).forEach((key) => {
+          const child = control.controls[key];
+          const childPath = path ? `${path}.${key}` : key;
+          walk(child, childPath);
+        });
+        return;
+      }
+
+      // FormArray
+      if (control instanceof FormArray) {
+        control.controls.forEach((child, index) => {
+          const childPath = `${path}[${index}]`;
+          walk(child, childPath);
+        });
+        return;
+      }
+
+      // FormControl
+      // ✅ FormControl (leaf)
+      if (control instanceof FormControl) {
+        const messages = this.getErrorByPath(productFormErrors, path);
+
+        if (Array.isArray(messages) && messages.length) {
+          result.push({
+            control: path,
+            label: labelMap?.[path] ?? path,
+            messages,
+          });
+        }
+      }
+    };
+
+    walk(form);
+
+    return result;
+  }
+  getErrorByPath(errors: any, path: string): string[] | null {
+    if (!errors || !path) return null;
+
+    return (
+      path
+        .replace(/\[(\d+)\]/g, '.$1')
+        .split('.')
+        .reduce((acc, key) => acc?.[key], errors) ?? null
+    );
   }
 }
