@@ -21,9 +21,10 @@ const routes: Routes = [
         path: 'product',
         loadChildren: () =>
           import('../pages/add-product/add-product.module').then(
-            (m) => m.AddProductPageModule
+            (m) => m.AddProductPageModule,
           ),
       },
+
       {
         path: 'cart',
         loadChildren: () =>

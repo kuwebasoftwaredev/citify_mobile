@@ -30,7 +30,8 @@ export class ImageEmbedService {
         ? await this.imageService.blobUrlToBlob(image)
         : image;
 
-    const bitmap = await createImageBitmap(blob);
+    const arrayBuffer = await blob.arrayBuffer();
+    const mimeType = blob.type || 'image/jpeg';
 
     return new Promise((resolve, reject) => {
       if (!this.worker) return reject('Worker not initialized');
@@ -61,13 +62,13 @@ export class ImageEmbedService {
 
           case 'error':
             this.worker?.removeEventListener('message', onMessage);
-            reject(new Error(data));
+            reject(new Error(data?.error || 'Unknown worker error'));
             break;
         }
       };
 
       this.worker.addEventListener('message', onMessage);
-      this.worker.postMessage({ bitmap }, [bitmap]);
+      this.worker.postMessage({ arrayBuffer, type: mimeType }, [arrayBuffer]);
     });
   }
 }

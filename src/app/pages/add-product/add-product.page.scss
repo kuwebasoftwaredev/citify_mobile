@@ -8,6 +8,10 @@
   margin-bottom: 1em;
 }
 
+.ion-padding {
+  --padding-bottom: 85px !important;
+}
+
 .example-box {
   position: relative;
   color: rgba(0, 0, 0, 0.87);
@@ -156,4 +160,133 @@ ion-buttons.vertical {
 
 :host(.modal-sheet) {
   --ion-safe-area-top: 70px !important; /* <-- your custom value */
+}
+
+.confetti-banner {
+  position: sticky;
+  top: 0;
+  height: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.confetti {
+  position: absolute;
+  top: -12px;
+  width: 8px;
+  height: 14px;
+  border-radius: 2px;
+  opacity: 0.9;
+  animation: confetti-fall 3.2s linear infinite;
+  transform: translateY(0) rotate(0deg);
+}
+
+.confetti--1 {
+  left: 6vw;
+  background: #f7d94f;
+  animation-delay: 0s;
+  animation-duration: 2.6s;
+}
+.confetti--2 {
+  left: 14vw;
+  background: #ff6b6b;
+  animation-delay: 0.4s;
+  animation-duration: 3.1s;
+}
+.confetti--3 {
+  left: 22vw;
+  background: #4dabf7;
+  animation-delay: 0.2s;
+  animation-duration: 2.8s;
+}
+.confetti--4 {
+  left: 30vw;
+  background: #63e6be;
+  animation-delay: 0.8s;
+  animation-duration: 3.4s;
+}
+.confetti--5 {
+  left: 38vw;
+  background: #ffd43b;
+  animation-delay: 0.1s;
+  animation-duration: 2.9s;
+}
+.confetti--6 {
+  left: 46vw;
+  background: #ff922b;
+  animation-delay: 0.6s;
+  animation-duration: 3s;
+}
+.confetti--7 {
+  left: 54vw;
+  background: #b197fc;
+  animation-delay: 0.3s;
+  animation-duration: 2.7s;
+}
+.confetti--8 {
+  left: 62vw;
+  background: #94d82d;
+  animation-delay: 0.9s;
+  animation-duration: 3.3s;
+}
+.confetti--9 {
+  left: 70vw;
+  background: #ff8787;
+  animation-delay: 0.5s;
+  animation-duration: 3.1s;
+}
+.confetti--10 {
+  left: 78vw;
+  background: #3bc9db;
+  animation-delay: 0.7s;
+  animation-duration: 2.6s;
+}
+.confetti--11 {
+  left: 86vw;
+  background: #ffa8a8;
+  animation-delay: 0.15s;
+  animation-duration: 3.5s;
+}
+.confetti--12 {
+  left: 94vw;
+  background: #fcc419;
+  animation-delay: 0.55s;
+  animation-duration: 2.8s;
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0.95;
+  }
+  80% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(140px) rotate(220deg);
+    opacity: 0;
+  }
+}
+
+.subcategory-select-trigger {
+  width: fit-content;
+  max-width: 100%;
+  min-width: 68px;
+  padding: 0 12px;
+  justify-content: flex-start;
+}
+
+.subcategory-select-trigger--empty {
+  width: 68px;
+  min-width: 68px;
+  padding: 0 8px;
+  justify-content: center;
+}
+
+.subcategory-select-trigger__text {
+  display: block;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

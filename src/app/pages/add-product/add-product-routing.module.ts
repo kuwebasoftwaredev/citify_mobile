@@ -4,8 +4,13 @@ import { AddProductPage } from '../add-product/add-product.page';
 
 const routes: Routes = [
   {
+    path: ':productCode',
+    component: AddProductPage,
+  },
+  {
     path: '',
     component: AddProductPage,
+    pathMatch: 'full',
   },
 ];
 
