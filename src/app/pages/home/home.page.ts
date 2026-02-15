@@ -28,16 +28,21 @@ export class HomePage {
   public headerEl!: HTMLElement;
   async onScroll(ev: any) {
     const y = ev.detail.scrollTop;
-    if (y > this.lastY + 5) {
+    console.log(ev);
+    console.log('y', y);
+    console.log('lastY', this.lastY);
+
+    if (y > this.lastY) {
       this.tabsEl.classList.add('hide');
       this.headerEl.classList.add('change-color');
+      this.lastY = y;
       await StatusBar.setBackgroundColor({ color: '#ffffff' });
-    } else if (y < this.lastY - 5) {
+    } else if (y < this.lastY) {
       this.tabsEl.classList.remove('hide');
       this.headerEl.classList.remove('change-color');
+      this.lastY = y;
       await StatusBar.setBackgroundColor({ color: '#f7d94f' });
     }
-    this.lastY = y;
   }
 
   onScrollEnd(ev: any) {

@@ -17,7 +17,10 @@ import { Store } from '@ngrx/store';
 import { logout } from 'src/app/state/auth/auth.actions';
 import { Capacitor } from '@capacitor/core';
 import { Image, ImageService } from '../image/image.service';
-import { ReqCloudinaryImageMetadata } from 'src/app/pages/add-product/add-product.page';
+import {
+  ReqCloudinaryImageMetadata,
+  SemanticImage,
+} from 'src/app/pages/add-product/add-product.page';
 
 @Injectable({
   providedIn: 'root',
@@ -32,7 +35,7 @@ export class CloudinaryService {
 
   uploadProductGalleryMobile(
     gallery: ReqCloudinaryImageMetadata[],
-    productId: string,
+    productCode: string,
     shopId: string,
   ): Observable<Image[]> {
     const uploads$ = gallery.map((item: ReqCloudinaryImageMetadata, index) =>
@@ -43,7 +46,7 @@ export class CloudinaryService {
           name: 'file',
           data: {
             upload_preset: 'ionic_products',
-            folder: `citify/shops/${shopId}/${productId}/gallery`,
+            folder: `citify/shops/${shopId}/${productCode}/gallery`,
             context: `order=${index}`,
             filename_override: item.id,
           },
@@ -69,9 +72,9 @@ export class CloudinaryService {
     return forkJoin(uploads$);
   }
 
-  delete(productId: string, publicIds: string[]): Observable<any> {
+  delete(productCode: string, publicIds: string[]): Observable<any> {
     const url = `${environment.SERVER_URL_CLUSTERS}/cloudinary/delete`;
-    const body = { productId, publicIds };
+    const body = { productCode, publicIds };
 
     return this.http.post(url, body).pipe(
       catchError((error) => {
@@ -82,7 +85,7 @@ export class CloudinaryService {
 
   uploadProductGalleryWeb(
     gallery: ReqCloudinaryImageMetadata[],
-    productId: string,
+    productCode: string,
     shopId: string,
   ): Observable<Image[]> {
     // Step 1: Convert all blobs to File objects
@@ -106,7 +109,7 @@ export class CloudinaryService {
           formData.append('upload_preset', 'ionic_products');
           formData.append(
             'folder',
-            `citify/shops/${shopId}/products/${productId}/gallery`,
+            `citify/shops/${shopId}/products/${productCode}/gallery`,
           );
           formData.append('context', `order=${item.order}`);
 
@@ -153,7 +156,7 @@ export class CloudinaryService {
 
   uploadProductSKUThumbnailsWeb(
     sku: any[],
-    productId: string,
+    productCode: string,
     shopId: string,
   ): any {
     // Step 1: Convert all blobs to File objects
@@ -176,7 +179,7 @@ export class CloudinaryService {
           formData.append('upload_preset', 'ionic_products');
           formData.append(
             'folder',
-            `citify/shops/${shopId}/products/${productId}/sku`,
+            `citify/shops/${shopId}/products/${productCode}/sku`,
           );
 
           return this.http
@@ -215,7 +218,7 @@ export class CloudinaryService {
 
   uploadProductSKUThumbnailsMobile(
     sku: any[],
-    productId: string,
+    productCode: string,
     shopId: string,
   ): any {
     const uploads$ = sku.map((sku: any, index) =>
@@ -226,7 +229,7 @@ export class CloudinaryService {
           name: 'file',
           data: {
             upload_preset: 'ionic_products',
-            folder: `citify/shops/${shopId}/products/${productId}/sku`,
+            folder: `citify/shops/${shopId}/products/${productCode}/sku`,
             filename_override: JSON.stringify(sku.combination),
           },
         }),
@@ -247,6 +250,70 @@ export class CloudinaryService {
     );
 
     return forkJoin(uploads$);
+  }
+
+  uploadProductSemanticImageWeb(
+    semantic: SemanticImage,
+    productCode: string,
+    shopId: string,
+  ): Observable<SemanticImage> {
+    return from(this.imageService.blobUrlToBlob(semantic.copy.src)).pipe(
+      switchMap((blob) => {
+        const formData = new FormData();
+
+        formData.append('file', blob);
+        formData.append('filename_override', semantic.copy.id || 'semantic');
+        formData.append('upload_preset', 'ionic_products');
+        formData.append(
+          'folder',
+          `citify/shops/${shopId}/products/${productCode}/semantic`,
+        );
+
+        return this.http
+          .post<any>(
+            'https://api.cloudinary.com/v1_1/dvgac4hr2/image/upload',
+            formData,
+          )
+          .pipe(
+            map((res) => ({
+              ...semantic,
+              cloudinary: {
+                public_id: res.public_id,
+                url: res.secure_url,
+              },
+              uploaded: { cloudinary: true, database: false },
+            })),
+          );
+      }),
+    );
+  }
+
+  uploadProductSemanticImageMobile(
+    semantic: SemanticImage,
+    productCode: string,
+    shopId: string,
+  ): Observable<SemanticImage> {
+    return from(
+      Http.uploadFile({
+        url: 'https://api.cloudinary.com/v1_1/dvgac4hr2/image/upload',
+        filePath: semantic.copy.src,
+        name: 'file',
+        data: {
+          upload_preset: 'ionic_products',
+          folder: `citify/shops/${shopId}/products/${productCode}/semantic`,
+          filename_override: semantic.copy.id || 'semantic',
+        },
+      }),
+    ).pipe(
+      map((res: any) => ({
+        ...semantic,
+        cloudinary: {
+          public_id: res.public_id,
+          url: res.secure_url,
+        },
+        uploaded: { cloudinary: true, database: false },
+      })),
+    );
   }
 
   isNative() {

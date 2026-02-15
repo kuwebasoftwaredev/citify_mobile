@@ -26,6 +26,7 @@ export interface Image {
     cloudinary: boolean;
     database: boolean;
   };
+  vector?: number[];
 }
 
 export interface OpenGalleryConfig {

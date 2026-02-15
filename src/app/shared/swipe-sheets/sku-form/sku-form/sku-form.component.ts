@@ -93,6 +93,8 @@ export class SkuFormComponent implements OnInit {
   public isSKUFormSubmitted: boolean = false;
   public variantCombinations: IVariantCombination[] = [];
 
+  public newImage = false;
+
   @Input() initialData?: any;
   @Input() variants!: FormArray;
   @Input() skus!: FormArray;
@@ -158,7 +160,10 @@ export class SkuFormComponent implements OnInit {
     });
 
     if (this.SKUForm.valid) {
-      this.modalCtrl.dismiss(this.SKUForm, 'save');
+      this.modalCtrl.dismiss(
+        { SKUForm: this.SKUForm, newImage: this.newImage },
+        'save',
+      );
     }
   }
 
@@ -176,6 +181,7 @@ export class SkuFormComponent implements OnInit {
 
   async openGalleryForSingle() {
     this.imageSKU = await this.imageService.openGallerySingle(this.imageSKU);
+    this.newImage = true;
 
     this.syncImagesToForm();
     this.updateFormErrors();
@@ -183,7 +189,7 @@ export class SkuFormComponent implements OnInit {
 
   async openCameraSingle() {
     this.imageSKU = await this.imageService.openCameraSingle(this.imageSKU);
-
+    this.newImage = true;
     this.syncImagesToForm();
     this.updateFormErrors();
   }
@@ -215,7 +221,7 @@ export class SkuFormComponent implements OnInit {
       .openCropper(this.imageSKU.original)
       .subscribe((result) => {
         this.imageSKU.copy.src = result.src;
-
+        this.newImage = true;
         this.imageSKU = {
           ...this.imageSKU,
           copy: { ...this.imageSKU.copy, src: result.src },

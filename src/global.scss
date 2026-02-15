@@ -81,17 +81,21 @@ body {
 ion-header,
 ion-toolbar {
   --border-width: 0 !important;
+
   --box-shadow: none !important;
   --padding-top: env(safe-area-inset-top);
   --background: var(--spoonwise-primary) !important;
   --color: #ffffff;
   transition: transform 0.85s ease;
+  border-radius: 0px 0px var(--spoonwise-border-radius)
+    var(--spoonwise-border-radius);
 }
 
 // Modal
 ion-modal ion-header,
 ion-modal ion-toolbar {
   --border-width: 0 !important;
+
   --box-shadow: none !important;
   --padding-top: env(safe-area-inset-top);
   --background: white !important;
@@ -100,6 +104,10 @@ ion-modal ion-toolbar {
 }
 
 // End Modal
+
+image-cropper {
+  border-radius: var(--spoonwise-border-radius) !important;
+}
 
 ion-input-otp {
   --border-radius: var(--spoonwise-border-radius);
@@ -113,12 +121,11 @@ ion-input-otp {
 }
 
 ion-content {
-  --ion-padding: 14px;
   --background: var(--spoonwise-very-light-background);
 }
 
 ion-modal {
-  --border-radius: var(--spoonwise-border-radius);
+  --border-radius: 50px !important;
 }
 
 ion-icon {
@@ -149,6 +156,7 @@ ion-tab-bar {
 .hide {
   ion-tab-bar {
     transform: translateY(100%); /* slides downward */
+    bottom: -20px !important;
   }
 }
 
@@ -182,6 +190,29 @@ body {
 
 ion-label {
   margin-top: 0px !important;
+}
+
+ion-content {
+  padding-inline-start: var(--ion-padding, 16px) !important;
+  padding-inline-end: var(--ion-padding, 16px) !important;
+}
+
+ion-modal ion-content {
+  --padding-start: var(--ion-padding, 16px) !important;
+  --padding-end: var(--ion-padding, 16px) !important;
+  --padding-top: var(--ion-padding, 16px) !important;
+  --padding-bottom: var(--ion-padding, 16px) !important;
+  --background: white !important;
+}
+ion-toolbar ion-buttons {
+  display: none !important;
+}
+
+ion-item {
+  border-radius: var(--spoonwise-border-radius) !important;
+}
+ion-item::part(native) {
+  border-radius: var(--spoonwise-border-radius) !important;
 }
 
 p {
@@ -291,4 +322,12 @@ ion-select::part(text) {
   height: auto;
   object-fit: contain;
   border-radius: var(--spoonwise-border-radius);
+}
+
+.material-symbols-outlined {
+  font-variation-settings:
+    "FILL" 1,
+    "wght" 400,
+    "GRAD" 0,
+    "opsz" 24;
 }

@@ -74,17 +74,26 @@ export class AuthEffects {
         from(Preferences.get({ key: 'auth' })).pipe(
           map(({ value }) => {
             if (!value) {
-              return AuthAction.logout;
+              return AuthAction.logout();
             }
             const auth = JSON.parse(value);
 
-            switch (auth.role) {
-              case 'buyer':
-                this.AuthService.navigate('/tabs/home');
-                break;
-              case 'seller':
-                this.AuthService.navigate('/tabs/home');
-                break;
+            const currentPath =
+              typeof window !== 'undefined'
+                ? window.location.pathname
+                : this.router.url;
+            const shouldRedirectToHome =
+              currentPath === '/' || currentPath === '/login';
+
+            if (shouldRedirectToHome) {
+              switch (auth.role) {
+                case 'buyer':
+                  this.AuthService.navigate('/tabs/home');
+                  break;
+                case 'seller':
+                  this.AuthService.navigate('/tabs/home');
+                  break;
+              }
             }
             return AuthAction.setAuthSuccess({ auth });
           }),

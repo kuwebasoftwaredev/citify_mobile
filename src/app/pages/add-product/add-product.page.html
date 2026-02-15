@@ -1,12 +1,27 @@
 <ion-header [translucent]="false">
   <ion-toolbar>
     <ion-title>
-      <img [src]="'./assets/spoonwise-logo-full.png'" style="width: 100px" />
+      <img [src]="'./assets/logo_citimo.png'" style="width: 30px" />
     </ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="false" class="ion-padding" [formGroup]="productForm">
+<ion-content [fullscreen]="false" [formGroup]="productForm" class="ion-padding">
+  <!-- <div class="confetti-banner" aria-hidden="true">
+    <span class="confetti-rope"></span>
+    <span class="confetti confetti--1"></span>
+    <span class="confetti confetti--2"></span>
+    <span class="confetti confetti--3"></span>
+    <span class="confetti confetti--4"></span>
+    <span class="confetti confetti--5"></span>
+    <span class="confetti confetti--6"></span>
+    <span class="confetti confetti--7"></span>
+    <span class="confetti confetti--8"></span>
+    <span class="confetti confetti--9"></span>
+    <span class="confetti confetti--10"></span>
+    <span class="confetti confetti--11"></span>
+    <span class="confetti confetti--12"></span>
+  </div> -->
   <div class="d-flex flex-column gap-2">
     <!-- Product Images -->
     <div class="gs-group-section">
@@ -45,7 +60,7 @@
               <div class="image-actions">
                 <div class="buttons">
                   <span
-                    (click)="remove(copy)"
+                    (click)="removeGalleryImage(i,copy)"
                     class="material-symbols-outlined"
                   >
                     delete
@@ -125,7 +140,7 @@
 
           <div class="small-text-size">
             <p>
-              Photos ({{ copies.length }}/6) Add up to 6 photos. <br />
+              Photos ({{ copies.length }}/10) Add up to 6 photos. <br />
               Drag to reorder. The first photo will be your thumbnail.
             </p>
           </div>
@@ -196,7 +211,7 @@
             Category</ion-label
           >
 
-          <div class="select-button-wrapper ion-activatable">
+          <div class="select-button-wrapper ion-activatable ion-padding">
             <ion-ripple-effect></ion-ripple-effect>
             <ion-select
               [interfaceOptions]="{
@@ -206,12 +221,18 @@
           }"
               placeholder="Select"
               interface="modal"
-              multiple="true"
+              multiple="false"
+              [compareWith]="compareCategoryByCode"
               formControlName="category"
             >
-              <ion-select-option value="reese">Reese</ion-select-option>
-              <ion-select-option value="snickers">Snickers</ion-select-option>
-              <ion-select-option value="twix">Twix</ion-select-option>
+              <div>
+                @for (category of mainCategories; track category._id) {
+                <ion-select-option
+                  [value]="{ code: category.code, name: category.name }"
+                  >{{ category.name }}</ion-select-option
+                >
+                }
+              </div>
             </ion-select>
           </div>
 
@@ -228,6 +249,8 @@
       </div>
 
       <!-- Product Sub Category -->
+      @if( category.value.length > 0) {
+
       <div
         class="gs-custom-form-ui-container"
         [class.gs-custom-form-ui-container-error]="
@@ -241,28 +264,69 @@
     productForm.get('subcategory')?.invalid &&
     (productForm.get('subcategory')?.touched || productForm.get('subcategory')?.dirty)
   "
-          >
-            Sub Category</ion-label
-          >
+            >Sub Category
+          </ion-label>
 
-          <div class="select-button-wrapper ion-activatable">
+          <div
+            class="text-capitalize select-button-wrapper ion-activatable subcategory-select-trigger"
+            [class.subcategory-select-trigger--empty]="
+              getSelectedSubcategoryNames().length === 0
+            "
+            style="font-size: 1rem"
+            fill="clear"
+            expand="block"
+            (click)="openSubcategoryModal()"
+          >
             <ion-ripple-effect></ion-ripple-effect>
-            <ion-select
-              [interfaceOptions]="{
-           breakpoints: [0, 0.3],
-            initialBreakpoint: 0.3,
-            cancelText: '', 
-          }"
-              placeholder="Select"
-              interface="modal"
-              multiple="true"
-              formControlName="subcategory"
-            >
-              <ion-select-option value="reese's">Reese's</ion-select-option>
-              <ion-select-option value="snickers">Snickers</ion-select-option>
-              <ion-select-option value="twix">Twix</ion-select-option>
-            </ion-select>
+            <span class="subcategory-select-trigger__text">
+              @if (getSelectedSubcategoryNames().length > 0) { @for (name of
+              getSelectedSubcategoryNames(); track $index; let isLast = $last) {
+              {{ name }}@if (!isLast) {, } } } @else { Select }
+            </span>
           </div>
+
+          <ion-modal
+            [isOpen]="isSubcategoryModalOpen"
+            (didDismiss)="closeSubcategoryModal()"
+            [breakpoints]="[0, 1]"
+            [initialBreakpoint]="0.7"
+          >
+            <ng-template>
+              <ion-header>
+                <ion-toolbar>
+                  <ion-title></ion-title>
+                  <ion-buttons slot="end">
+                    <ion-button (click)="closeSubcategoryModal()"
+                      >Close</ion-button
+                    >
+                  </ion-buttons>
+                </ion-toolbar>
+              </ion-header>
+
+              <ion-content>
+                <div class="subcategory-list">
+                  @for (subcategory of
+                  getSubcategoryListForSelectedCategories(); track
+                  subcategory.code) { @if (isSubcategoryVisible(subcategory)) {
+                  <ion-item
+                    lines="none"
+                    [style.padding-left.px]="subcategory.depth * 15"
+                    button="true"
+                    detail="false"
+                    (click)="onSubcategoryItemClick(subcategory, $event)"
+                  >
+                    <ion-checkbox
+                      slot="start"
+                      [checked]="isSubcategorySelected(subcategory.code)"
+                      (ionChange)="toggleSubcategory(subcategory, $event.detail.checked)"
+                    ></ion-checkbox>
+                    <ion-label>{{ subcategory.name }}</ion-label>
+                  </ion-item>
+                  } }
+                </div>
+              </ion-content>
+            </ng-template>
+          </ion-modal>
 
           @if( productForm.get('subcategory')?.valid &&
           (productForm.get('subcategory')?.touched ||
@@ -275,6 +339,7 @@
           }
         </div>
       </div>
+      }
     </div>
 
     <div class="gs-group-section">
@@ -361,7 +426,7 @@
             (ionChange)="onToggleChange($event)"
             mode="ios"
             id="hasVariantToggle"
-            formControlName="hasVariants"
+            [checked]="hasVariants"
           ></ion-toggle>
 
           @if(productForm.get('variants')?.valid &&
@@ -378,7 +443,7 @@
           <p>Enable this if your product has multiple variants.</p>
         </div>
 
-        @if(hasVariants) {
+        @if(this.hasVariants) {
 
         <div
           style="
@@ -723,8 +788,8 @@
 
         <div class="small-text-size">
           <p>
-            This image helps Citify recognize your product when customers search
-            using photos.
+            This image helps Citimo to train your product image for customers
+            search using photos.
           </p>
         </div>
       </div>
@@ -734,13 +799,13 @@
     @if (productForm.invalid && isProductFormSubmitted) {
     <div class="gs-group-section">
       <div class="error-summary">
-        <div class="error-header">
+        <!-- <div class="error-header">
           <ion-text>
             <strong>
               Almost there! Please review and correct the fields below.
             </strong>
           </ion-text>
-        </div>
+        </div> -->
 
         <div class="form-errors">
           @for (group of groupedErrors; track group.control) {
@@ -772,7 +837,7 @@
         </div>
         <div>
           <ion-button
-            (click)="uploadProductGalleryAPI(productId, '')"
+            (click)="uploadProductGalleryAPI(productCode, '')"
             size="medium"
             expand="block"
             >Re-upload Images</ion-button
@@ -808,7 +873,7 @@
           <ion-text>
             By publishing this product, you confirm that it complies with
             <ion-text color="primary" (click)="openTerms('marketplace')"
-              >Citify’s Marketplace Terms</ion-text
+              >Citimo’s Marketplace Terms</ion-text
             >
             and
             <ion-text color="primary" (click)="openTerms('prohibitedItems')"

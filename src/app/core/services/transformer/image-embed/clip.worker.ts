@@ -4,12 +4,12 @@ import { RawImage, pipeline, env } from '@xenova/transformers';
 // Configuration for local environments
 env.allowLocalModels = false;
 
-let modelPromise: any = null;
+let modelPromise: Promise<any> | null = null;
 
-async function getModel(progress_callback: any) {
+async function getModel(progress_callback: (p: any) => void) {
   if (!modelPromise) {
     modelPromise = pipeline(
-      'feature-extraction',
+      'image-feature-extraction',
       'Xenova/clip-vit-base-patch32',
       {
         progress_callback,
@@ -19,22 +19,45 @@ async function getModel(progress_callback: any) {
   return modelPromise;
 }
 
+type EmbedRequest = {
+  arrayBuffer: ArrayBuffer;
+  type?: string;
+};
+
+type WorkerMessage =
+  | { type: 'downloading'; progress: number }
+  | { type: 'embedding'; embedding: number[] }
+  | { type: 'error'; error: string };
+
 addEventListener('message', async ({ data }) => {
-  const { bitmap } = data;
+  const { arrayBuffer, type } = data as EmbedRequest;
 
   try {
-    await getModel((p: any) => {
-      postMessage({ type: 'downloading', progress: p.progress });
+    const extractor = await getModel((p: any) => {
+      postMessage({ type: 'downloading', progress: p.progress } as WorkerMessage);
     });
 
     // Process image
-    const image = await RawImage.fromBlob(bitmap);
+    if (!arrayBuffer) {
+      throw new Error('Missing image data');
+    }
+
+    const blob = new Blob([arrayBuffer], { type: type || 'image/jpeg' });
+    const image = await RawImage.fromBlob(blob);
+
+    // Run CLIP to get a semantic embedding (float vector)
+    const output = await extractor(image, {
+      pooling: 'mean',
+      normalize: true,
+    });
 
     // Convert tensor to regular array
-    const embedding = Array.from(image.data);
+    const embedding = Array.from(output.data);
 
-    postMessage({ type: 'embedding', embedding });
+    postMessage({ type: 'embedding', embedding } as WorkerMessage);
   } catch (error: any) {
-    postMessage({ type: 'error', error: error.message });
+    const message =
+      typeof error?.message === 'string' ? error.message : String(error);
+    postMessage({ type: 'error', error: message } as WorkerMessage);
   }
 });
