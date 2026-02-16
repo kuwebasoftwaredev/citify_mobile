@@ -45,8 +45,18 @@ import {
 import { TermsComponentComponent } from 'src/app/shared/swipe-sheets/terms/terms.component/terms.component.component';
 import { ImageEmbedService } from 'src/app/core/services/transformer/image-embed/image-embed.service';
 import { TextEmbedService } from 'src/app/core/services/transformer/text-embed/text-embed';
+import { AutoSelectCategoryService } from 'src/app/core/services/transformer/auto-select-category/auto-select-category.service';
 import { CloudinaryService } from 'src/app/core/services/cloudinary/cloudinary.service';
-import { firstValueFrom, forkJoin, from, map, of, switchMap, tap } from 'rxjs';
+import {
+  debounceTime,
+  firstValueFrom,
+  forkJoin,
+  from,
+  map,
+  of,
+  switchMap,
+  tap,
+} from 'rxjs';
 import { ProductService } from 'src/app/core/services/product/product.service';
 import { CategoryService } from 'src/app/core/services/category/category.service';
 
@@ -116,6 +126,7 @@ export class AddProductPage {
     private formService: FormService,
     private imageEmbedService: ImageEmbedService,
     private textEmbedService: TextEmbedService,
+    private autoSelectCategoryService: AutoSelectCategoryService,
     private cloudinaryService: CloudinaryService,
     private productService: ProductService,
     private categoryService: CategoryService,
@@ -131,6 +142,20 @@ export class AddProductPage {
       }
     });
 
+    this.productForm
+      .get('productName')
+      ?.valueChanges.pipe(debounceTime(1000))
+      .subscribe(() => {
+        this.autoSelectCategory();
+      });
+
+    this.productForm
+      .get('description')
+      ?.valueChanges.pipe(debounceTime(1000))
+      .subscribe(() => {
+        this.autoSelectCategory();
+      });
+
     this.productForm.get('category')?.valueChanges.subscribe((value) => {
       const normalized = this.normalizeSelectedCategories(value);
       if (!_.isEqual(value, normalized)) {
@@ -140,11 +165,14 @@ export class AddProductPage {
       }
 
       this.pruneSelectedSubcategoriesByCategory();
+      this.autoSelectSubcategory();
     });
 
     this.loadCategoryTree();
     this.checkProductCodeURLParams();
   }
+
+  ngOnDestroy() {}
 
   ionViewWillEnter() {
     StatusBar.setOverlaysWebView({ overlay: false });
@@ -400,7 +428,19 @@ export class AddProductPage {
   public isSubcategoryModalOpen = false;
 
   get mainCategories(): any[] {
-    return (this.categoryTree || []).filter((cat: any) => !cat.parent_code);
+    return (this.categoryTree || []).filter((cat: any) =>
+      this.isRootCategory(cat),
+    );
+  }
+
+  private isRootCategory(node: any): boolean {
+    const parentCode = node?.parent_code;
+    if (parentCode === null || parentCode === undefined || parentCode === '') {
+      return true;
+    }
+
+    const parsedParentCode = Number(parentCode);
+    return Number.isFinite(parsedParentCode) && parsedParentCode === 0;
   }
 
   compareCategoryByCode = (
@@ -453,6 +493,83 @@ export class AddProductPage {
       .filter((name) => !!name);
   }
 
+  private hasSelectedCategory(): boolean {
+    return this.getSelectedCategoryCodes().length > 0;
+  }
+
+  private hasSelectedSubcategory(): boolean {
+    return (
+      this.normalizeSelectedSubcategories(this.subcategory.value).length > 0
+    );
+  }
+
+  private async autoSelectCategory() {
+    console.log('autoSelectCategory');
+    if (!this.categoryTree.length) return;
+
+    const query = this.autoSelectCategoryService.buildQuery(
+      this.productForm.get('productName')?.value ?? '',
+      this.productForm.get('description')?.value ?? '',
+    );
+
+    console.log('query', query);
+
+    if (!query) return;
+    console.log('this.mainCategories', this.mainCategories);
+    const suggestion = await this.autoSelectCategoryService.pickBestMatch(
+      query,
+      this.mainCategories.map((node: any) => ({
+        code: Number(node.code),
+        name: node.name ?? '',
+      })),
+    );
+
+    console.log('suggestion', suggestion);
+
+    if (suggestion) {
+      this.category.setValue([
+        { code: suggestion.code, name: suggestion.name },
+      ]);
+    }
+  }
+
+  private async autoSelectSubcategory() {
+    console.log('autoSelectSubcategory');
+    if (!this.categoryTree.length) return;
+    if (!this.hasSelectedCategory()) return;
+
+    const query = this.autoSelectCategoryService.buildQuery(
+      this.productForm.get('productName')?.value ?? '',
+      this.productForm.get('description')?.value ?? '',
+    );
+
+    if (!query) return;
+
+    const suggestion = await this.autoSelectCategoryService.pickBestMatch(
+      query,
+      this.getSubcategoriesForSelectedCategories().map((node: any) => ({
+        code: Number(node.code),
+        name: node.name ?? '',
+        labelPath: node.labelPath ?? '',
+      })),
+    );
+    console.log(
+      'getSubcategoriesForSelectedCategories',
+      this.getSubcategoriesForSelectedCategories(),
+    );
+    console.log('suggestion', suggestion);
+    if (!suggestion) return;
+
+    const chain = this.getSubcategorySelectionChain(Number(suggestion.code));
+    const selected = chain.length
+      ? chain
+      : [{ code: suggestion.code, name: suggestion.name }];
+
+    this.subcategory.setValue(selected);
+    this.subcategory.markAsTouched();
+    this.subcategory.updateValueAndValidity();
+  }
+
   private pruneSelectedSubcategoriesByCategory() {
     const allowedCodes = new Set<number>(
       this.getSubcategoryListForSelectedCategories().map((node) => node.code),
@@ -472,9 +589,16 @@ export class AddProductPage {
   private loadCategoryTree() {
     this.categoryService.getCategoryTree().subscribe({
       next: (response: any) => {
-        this.categoryTree =
-          response?.data ?? response?.categories ?? response ?? [];
+        const rawCategoryTree =
+          response?.data?.categories ??
+          response?.data ??
+          response?.categories ??
+          response;
+        this.categoryTree = Array.isArray(rawCategoryTree)
+          ? rawCategoryTree
+          : [];
         this.buildSubcategoryIndex();
+        this.autoSelectCategory();
       },
       error: (error) => {
         console.error('Error loading category tree:', error);
@@ -622,6 +746,38 @@ export class AddProductPage {
       }
     }
     return codes;
+  }
+
+  private getSubcategorySelectionChain(code: number): SelectedSubcategory[] {
+    const selectedCategoryCodes = new Set(this.getSelectedCategoryCodes());
+    const chainCodes: number[] = [];
+    const seen = new Set<number>();
+    let cursor = code;
+
+    while (Number.isFinite(cursor) && !seen.has(cursor)) {
+      seen.add(cursor);
+      chainCodes.push(cursor);
+
+      const parentCode = this.subcategoryParentMap.get(cursor);
+      if (!parentCode || selectedCategoryCodes.has(parentCode)) {
+        break;
+      }
+
+      cursor = parentCode;
+    }
+
+    return chainCodes
+      .reverse()
+      .map((itemCode) => {
+        const node = this.subcategoryNodeMap.get(itemCode);
+        if (!node) return null;
+
+        return {
+          code: Number(node.code),
+          name: node.name ?? '',
+        };
+      })
+      .filter((item): item is SelectedSubcategory => !!item);
   }
 
   toggleSubcategory(node: any, checked: boolean) {
