@@ -1140,6 +1140,34 @@ ${price ? `The price is ${price} pesos.` : ''}
 `;
   }
 
+  private buildSkuDatabaseSyncPayload(): any[] {
+    const hasPendingSkuDatabaseSync = this.skus.value.some(
+      (sku: any) =>
+        sku?.image?.uploaded?.cloudinary && !sku?.image?.uploaded?.database,
+    );
+
+    if (!hasPendingSkuDatabaseSync) {
+      return [];
+    }
+
+    return this.skus.value.map((sku: any) => {
+      const isCloudinaryUploaded = !!sku?.image?.uploaded?.cloudinary;
+      return {
+        ...sku,
+        image: {
+          ...sku.image,
+          uploaded: {
+            ...sku.image?.uploaded,
+            cloudinary: isCloudinaryUploaded,
+            database: isCloudinaryUploaded
+              ? true
+              : !!sku?.image?.uploaded?.database,
+          },
+        },
+      };
+    });
+  }
+
   public isUploadSKUThumbnailTriggered = false;
   async uploadProductSKUThumbnailsAPI(
     productId: string,
@@ -1473,22 +1501,7 @@ ${price ? `The price is ${price} pesos.` : ''}
                 uploaded: { cloudinary: true, database: true },
               }));
 
-            const skus = this.skus.value
-              .filter(
-                (sku: any) =>
-                  sku.image.uploaded?.cloudinary &&
-                  !sku.image.uploaded?.database,
-              )
-              .map((sku: any) => ({
-                ...sku,
-                image: {
-                  ...sku.image,
-                  uploaded: {
-                    ...sku.image.uploaded,
-                    database: true,
-                  },
-                },
-              }));
+            const skus = this.buildSkuDatabaseSyncPayload();
 
             const semanticImage = {
               cloudinary: this.semanticImage.cloudinary,
@@ -1644,22 +1657,7 @@ ${price ? `The price is ${price} pesos.` : ''}
                 uploaded: { cloudinary: true, database: true },
               }));
 
-            const skus = this.skus.value
-              .filter(
-                (sku: any) =>
-                  sku.image.uploaded?.cloudinary &&
-                  !sku.image.uploaded?.database,
-              )
-              .map((sku: any) => ({
-                ...sku,
-                image: {
-                  ...sku.image,
-                  uploaded: {
-                    ...sku.image.uploaded,
-                    database: true,
-                  },
-                },
-              }));
+            const skus = this.buildSkuDatabaseSyncPayload();
 
             const semanticImage =
               this.semanticImage.uploaded?.cloudinary &&
