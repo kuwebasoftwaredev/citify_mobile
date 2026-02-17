@@ -349,21 +349,20 @@ export class AddProductPage {
 
   removeGalleryImage(index: number, imageDetails: Image) {
     const removedImage = this.copies[index];
-    console.log('-----copies', this.copies);
-    console.log('-----imageDetails', imageDetails);
+
     this.copies = this.copies.filter((copy: any) => copy.id != imageDetails.id);
     this.originals = this.originals.filter(
       (copy: any) => copy.id != imageDetails.id,
     );
 
-    console.log('-----this.copies', this.copies);
-
     const publicId = removedImage?.cloudinary?.public_id;
     // Push the publicId into the publicIdCloudinary array
     if (!_.isNil(publicId)) this.publicIdCloudinaryForRemoval.push(publicId);
 
-    console.log('-----------publicId', publicId);
-    console.log('-----------productForm', this.productForm.value);
+    console.log(
+      'this.publicIdCloudinaryForRemoval',
+      this.publicIdCloudinaryForRemoval,
+    );
 
     this.syncImagesToForm();
     this.updateFormErrors();
@@ -1151,11 +1150,11 @@ ${price ? `The price is ${price} pesos.` : ''}
         (sku: any) => sku.image?.uploaded?.cloudinary,
       );
 
+      await this.deleteMarkedCloudinaryImages();
+
       if (isAllUploaded) {
         return [];
       }
-
-      await this.deleteMarkedCloudinaryImages();
 
       const sku: any[] = this.skus.value.filter(
         (sku: any) => !sku.image?.uploaded?.cloudinary,
@@ -1222,11 +1221,11 @@ ${price ? `The price is ${price} pesos.` : ''}
     try {
       const isAllUploaded = this.copies.every((img) => img.uploaded.cloudinary);
 
+      await this.deleteMarkedCloudinaryImages();
+
       if (isAllUploaded) {
         return [];
       }
-
-      await this.deleteMarkedCloudinaryImages();
 
       const gallery: ReqCloudinaryImageMetadata[] = this.copies
         .map((img: Image, index: number) =>
