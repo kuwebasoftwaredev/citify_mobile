@@ -1052,11 +1052,54 @@ export class AddProductPage {
           this.semanticImageFormControl?.setValue(null);
         }
         this.semanticImageFormControl?.updateValueAndValidity();
+        this.initialUpdateSnapshot = this.buildComparableUpdatePayload();
       },
       error: (error: any) => {
         console.error('Error fetching product for edit:', error);
       },
     });
+  }
+
+  private buildComparableUpdatePayload(): Record<string, any> {
+    const categoryList = this.normalizeSelectedCategories(
+      this.productForm.value.category,
+    );
+
+    return {
+      gallery: this.gallery.value ?? [],
+      name: this.productForm.value.productName ?? '',
+      status: this.status,
+      description: this.productForm.value.description ?? '',
+      category: categoryList,
+      subcategory: this.normalizeSelectedSubcategories(
+        this.productForm.value.subcategory,
+      ),
+      publishingType: this.productForm.value.publishingType ?? 'SCHEDULED',
+      scheduledDate: this.productForm.value.scheduledDate ?? this.defaultDate,
+      semantic_image: {
+        cloudinary: this.semanticImage.cloudinary,
+        upload: this.semanticImage.uploaded,
+      },
+      skus: this.normalizeSKUImage(this.productForm.value.skus ?? []),
+      variants: this.productForm.value.variants ?? [],
+    };
+  }
+
+  private buildChangedUpdatePayload(
+    currentPayload: Record<string, any>,
+  ): Record<string, any> {
+    if (!this.initialUpdateSnapshot) {
+      return { ...currentPayload };
+    }
+
+    const changedPayload: Record<string, any> = {};
+    Object.keys(currentPayload).forEach((key) => {
+      if (!_.isEqual(currentPayload[key], this.initialUpdateSnapshot?.[key])) {
+        changedPayload[key] = currentPayload[key];
+      }
+    });
+
+    return changedPayload;
   }
 
   onSubcategoryItemClick(node: any, event: Event) {
@@ -1297,6 +1340,7 @@ ${price ? `The price is ${price} pesos.` : ''}
   public publicIdCloudinaryForRemoval: string[] = [];
   public status = 'PRESAVED';
   public isGalleryOrderChanged = false;
+  private initialUpdateSnapshot: Record<string, any> | null = null;
 
   private async deleteMarkedCloudinaryImages() {
     if (_.size(this.publicIdCloudinaryForRemoval) === 0) return;
@@ -1503,27 +1547,30 @@ ${price ? `The price is ${price} pesos.` : ''}
           },
         });
     } else {
-      const categoryList = this.normalizeSelectedCategories(
-        this.productForm.value.category,
-      );
+      const comparablePayload = this.buildComparableUpdatePayload(); // Get the comparable payload
+      const productData = this.buildChangedUpdatePayload(comparablePayload); // Get the changed payload
+      // Check if any field has changed
+      const hasChangedField = (field: string): boolean =>
+        Object.prototype.hasOwnProperty.call(productData, field);
 
-      // Generate image embedding for vector image
-      const imageVector = await this.imageEmbedService.embedImage(
-        this.semanticImageFormControl?.value?.src,
-      );
-      this.semanticImage.vector = imageVector;
-      this.semanticImageFormControl.patchValue(this.semanticImage);
+      // Check if text embedding should be updated
+      const shouldUpdateTextEmbedding =
+        hasChangedField('name') ||
+        hasChangedField('description') ||
+        hasChangedField('category') ||
+        hasChangedField('subcategory') ||
+        hasChangedField('variants') ||
+        hasChangedField('skus');
 
-      // Build SKU summary text for text embedding
-      const skuSummary = this.productForm.value.skus.map((sku: any) => {
-        return this.buildSkuEmbeddingText(sku.combination, sku.price);
-      });
+      if (shouldUpdateTextEmbedding) {
+        const skuSummary = this.productForm.value.skus.map((sku: any) => {
+          return this.buildSkuEmbeddingText(sku.combination, sku.price);
+        });
 
-      // Generate text embedding
-      const textVector = await this.textEmbedService.embed(
-        `Product name: ${this.productForm.value.productName}.
+        const textVector = await this.textEmbedService.embed(
+          `Product name: ${this.productForm.value.productName}.
          Description: ${this.productForm.value.description}.
-         Category: ${categoryList.map((cat) => cat.name).join(', ')}.
+         Category: ${this.getSelectedCategoryNames().join(', ')}.
          Subcategory: ${this.getSelectedSubcategoryNames().join(', ')}.
          Variants: ${this.productForm.value.variants
            .map(
@@ -1531,34 +1578,31 @@ ${price ? `The price is ${price} pesos.` : ''}
          options: ${v.options?.join(', ')}`,
            )
            .join('; ')}.SKU Details: ${skuSummary.join(' ')}`.trim(),
-      );
-      console.log(
-        '-this.productForm.value.gallery',
-        this.productForm.value.gallery,
-      );
-      const productData = {
-        gallery: this.gallery.value,
-        name: this.productForm.value.productName,
-        status: this.status,
-        description: this.productForm.value.description,
-        category: categoryList,
-        subcategory: this.productForm.value.subcategory,
-        publishingType: this.productForm.value.publishingType,
-        scheduledDate: this.productForm.value.scheduledDate,
-        semantic_image: {
-          cloudinary: this.semanticImage.cloudinary,
-          upload: this.semanticImage.uploaded,
-        },
-        textEmbedding: Array.from(textVector),
-        imageEmbedding: Array.from(imageVector),
-        skus: this.normalizeSKUImage(this.productForm.value.skus),
-        variants: this.productForm.value.variants,
-      };
+        );
+        productData['textEmbedding'] = Array.from(textVector);
+      }
 
-      console.log('-----------productData', productData);
+      if (hasChangedField('semantic_image')) {
+        const imageVector = await this.imageEmbedService.embedImage(
+          this.semanticImageFormControl?.value?.src,
+        );
+        this.semanticImage.vector = imageVector;
+        this.semanticImageFormControl.patchValue(this.semanticImage);
+        productData['imageEmbedding'] = Array.from(imageVector);
+      }
 
-      this.productService
-        .updateProduct(this.productCode, productData)
+      const updateProduct$ = _.size(productData)
+        ? this.productService.updateProduct(this.productCode, productData)
+        : of({
+            data: {
+              product: {
+                productCode: this.productCode,
+                shopId: this.shopId,
+              },
+            },
+          });
+
+      updateProduct$
         .pipe(
           switchMap((response: any) => {
             const updateProductResponse = response?.data;
@@ -1681,6 +1725,7 @@ ${price ? `The price is ${price} pesos.` : ''}
         .subscribe({
           next: (finalResult) => {
             console.log('Product updated successfully:', finalResult);
+            this.initialUpdateSnapshot = this.buildComparableUpdatePayload();
           },
           error: (error) => {
             console.error('Error updating product:', error);
@@ -1690,16 +1735,8 @@ ${price ? `The price is ${price} pesos.` : ''}
   }
 
   normalizeSKUImage(sku: any) {
-    console.log('sku', sku);
     return sku.map((sku: any) => ({
       ...sku,
-      // image: {
-      //   cloudinary: {
-      //     url: sku.image?.secure_url,
-      //     public_id: '',
-      //   },
-      // },
-      // uploaded: { cloudinary: false, database: false },
     }));
   }
 
