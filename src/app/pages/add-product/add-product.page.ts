@@ -240,8 +240,6 @@ export class AddProductPage {
 
     this.semanticImageFormControl?.markAsTouched();
     this.semanticImageFormControl?.updateValueAndValidity();
-
-    console.log('this.productForm', this.productForm.value);
   }
 
   onScheduleChange(event: any) {
@@ -298,7 +296,6 @@ export class AddProductPage {
       let file: File;
 
       if (copy.notWebpath) {
-        console.log('--------0');
         // cropped image
         const blob = await base64ToBlob(copy.img);
         file = new File([blob], `photo_${index}.png`, {
@@ -313,8 +310,6 @@ export class AddProductPage {
         const blob = await base64ToBlob(
           `data:image/jpeg;base64,${result.data}`,
         );
-
-        console.log('--------1', blob);
         file = new File([blob], `photo_${index}.png`, { type: blob.type });
       }
 
@@ -340,7 +335,6 @@ export class AddProductPage {
   }
 
   drop(event: any) {
-    console.log('drop');
     moveItemInArray(this.copies, event.previousIndex, event.currentIndex);
     this.isGalleryOrderChanged = true;
     this.syncImagesToForm();
@@ -503,7 +497,6 @@ export class AddProductPage {
   }
 
   private async autoSelectCategory() {
-    console.log('autoSelectCategory');
     if (!this.categoryTree.length) return;
 
     const query = this.autoSelectCategoryService.buildQuery(
@@ -511,10 +504,7 @@ export class AddProductPage {
       this.productForm.get('description')?.value ?? '',
     );
 
-    console.log('query', query);
-
     if (!query) return;
-    console.log('this.mainCategories', this.mainCategories);
     const suggestion = await this.autoSelectCategoryService.pickBestMatch(
       query,
       this.mainCategories.map((node: any) => ({
@@ -522,8 +512,6 @@ export class AddProductPage {
         name: node.name ?? '',
       })),
     );
-
-    console.log('suggestion', suggestion);
 
     if (suggestion) {
       this.category.setValue([
@@ -533,7 +521,6 @@ export class AddProductPage {
   }
 
   private async autoSelectSubcategory() {
-    console.log('autoSelectSubcategory');
     if (!this.categoryTree.length) return;
     if (!this.hasSelectedCategory()) return;
 
@@ -552,11 +539,7 @@ export class AddProductPage {
         labelPath: node.labelPath ?? '',
       })),
     );
-    console.log(
-      'getSubcategoriesForSelectedCategories',
-      this.getSubcategoriesForSelectedCategories(),
-    );
-    console.log('suggestion', suggestion);
+
     if (!suggestion) return;
 
     const chain = this.getSubcategorySelectionChain(Number(suggestion.code));
@@ -801,8 +784,6 @@ export class AddProductPage {
     this.subcategory.setValue(Array.from(selected.values()));
     this.subcategory.markAsTouched();
     this.subcategory.updateValueAndValidity();
-
-    console.log('this.productForm.value', this.productForm.value);
   }
 
   private normalizeSelectedSubcategories(value: any): SelectedSubcategory[] {
@@ -990,9 +971,10 @@ export class AddProductPage {
   private fetchProductForEdit(productCode: string) {
     this.productService.getProduct(productCode).subscribe({
       next: (response: any) => {
-        console.log('response', response);
         const product = response.data;
         if (!product) return;
+
+        this.status = product.status || 'PRESAVED';
 
         this.shopId = product.shopId ?? this.shopId;
 
@@ -1178,6 +1160,7 @@ ${price ? `The price is ${price} pesos.` : ''}
         (sku: any) => sku.image?.uploaded?.cloudinary,
       );
 
+      if (this.status === 'PRESAVED') 
       await this.deleteMarkedCloudinaryImages();
 
       if (isAllUploaded) {
@@ -1249,6 +1232,7 @@ ${price ? `The price is ${price} pesos.` : ''}
     try {
       const isAllUploaded = this.copies.every((img) => img.uploaded.cloudinary);
 
+      if (this.status === 'PRESAVED') 
       await this.deleteMarkedCloudinaryImages();
 
       if (isAllUploaded) {
@@ -1381,7 +1365,7 @@ ${price ? `The price is ${price} pesos.` : ''}
         this.publicIdCloudinaryForRemoval,
       ),
     );
-    console.log('-----------x', x);
+
     this.publicIdCloudinaryForRemoval = [];
   }
 
@@ -1519,8 +1503,6 @@ ${price ? `The price is ${price} pesos.` : ''}
               ...(_.size(semanticImage) && { semanticImage }),
             };
 
-            console.log('-----props', prop);
-
             return this.productService
               .updateProduct(this.productCode, prop)
               .pipe(
@@ -1549,7 +1531,6 @@ ${price ? `The price is ${price} pesos.` : ''}
         .subscribe({
           next: (finalResult) => {
             console.log('Product saved successfully:', finalResult);
-            console.log('this.copies', this.copies);
 
             // Handle success (e.g., show a success message, navigate away, etc.)
           },
@@ -1574,7 +1555,7 @@ ${price ? `The price is ${price} pesos.` : ''}
         hasChangedField('variants') ||
         hasChangedField('skus');
 
-      if (shouldUpdateTextEmbedding) {
+      if (shouldUpdateTextEmbedding && this.status !== 'PUBLISHED') {
         const skuSummary = this.productForm.value.skus.map((sku: any) => {
           return this.buildSkuEmbeddingText(sku.combination, sku.price);
         });
@@ -1594,7 +1575,7 @@ ${price ? `The price is ${price} pesos.` : ''}
         productData['textEmbedding'] = Array.from(textVector);
       }
 
-      if (hasChangedField('semantic_image')) {
+      if (hasChangedField('semantic_image') && this.status !== 'PUBLISHED') {
         const imageVector = await this.imageEmbedService.embedImage(
           this.semanticImageFormControl?.value?.src,
         );
@@ -1721,7 +1702,10 @@ ${price ? `The price is ${price} pesos.` : ''}
         )
         .subscribe({
           next: (finalResult) => {
-            console.log('Product updated successfully:', finalResult);
+            console.log(
+              'Product updated successfully:',
+              finalResult.updateProductResponse?.status,
+            );
             this.initialUpdateSnapshot = this.buildComparableUpdatePayload();
           },
           error: (error) => {
@@ -1756,19 +1740,79 @@ ${price ? `The price is ${price} pesos.` : ''}
 
     // Get the component instance
     const { data, role } = await modal.onDidDismiss();
-    console.log('role', role, 'data', data);
+
     if (role === 'save' && data) {
       this.addVariant(data, i);
     }
   }
+
+  private normalizeVariantOptionList(value: any): string[] {
+    if (!Array.isArray(value)) return [];
+    return value
+      .map((item: any) => String(item ?? '').trim())
+      .filter((item: string) => !!item);
+  }
+
+  private buildValueFrequencyMap(values: string[]): Map<string, number> {
+    const map = new Map<string, number>();
+    values.forEach((value) => {
+      map.set(value, (map.get(value) ?? 0) + 1);
+    });
+    return map;
+  }
+
+  private shouldResetSkuCombinationsOnVariantChange(
+    previousVariant: any,
+    nextVariant: any,
+    isNewVariant: boolean,
+  ): boolean {
+    if (isNewVariant) return true;
+    if (!previousVariant) return true;
+
+    const previousName = String(previousVariant?.name ?? '').trim();
+    const nextName = String(nextVariant?.name ?? '').trim();
+    if (previousName !== nextName) return true;
+
+    const previousOptions = this.normalizeVariantOptionList(
+      previousVariant?.options,
+    );
+    const nextOptions = this.normalizeVariantOptionList(nextVariant?.options);
+
+    if (nextOptions.length < previousOptions.length) {
+      return true;
+    }
+
+    // Reset only when existing options were removed/renamed.
+    // Pure additions to the current option list should not reset SKU combinations.
+    const previousCounts = this.buildValueFrequencyMap(previousOptions);
+    const nextCounts = this.buildValueFrequencyMap(nextOptions);
+
+    for (const [option, count] of previousCounts.entries()) {
+      if ((nextCounts.get(option) ?? 0) < count) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   addVariant(formgroup: FormGroup, i: number | null) {
+    const previousVariant = i !== null ? this.variants.at(i)?.value : null;
+    const shouldReset = this.shouldResetSkuCombinationsOnVariantChange(
+      previousVariant,
+      formgroup?.value,
+      i === null,
+    );
+
     if (i !== null) {
       this.variants.setControl(i, formgroup); // update existing variant
     } else {
       this.variants.push(formgroup); // add new variant
     }
 
-    this.clearSKUsCombination();
+    if (shouldReset) {
+      this.clearSKUsCombination();
+    }
     this.sheetRef.dismiss();
   }
   removeVariant(index: number) {
@@ -1823,9 +1867,6 @@ ${price ? `The price is ${price} pesos.` : ''}
     // Get the component instance
     const { data, role } = await modal.onDidDismiss();
 
-    console.log('role', role);
-    console.log('data', data);
-
     if (role === 'save' && data) {
       this.addSKU(data, i);
     } else {
@@ -1835,9 +1876,6 @@ ${price ? `The price is ${price} pesos.` : ''}
 
   addSKU(data: any, i: any) {
     if (!_.isNil(i)) {
-      console.log('i', this.skus.at(i).value);
-      console.log('skuForm', data);
-
       if (data.newImage) {
         this.publicIdCloudinaryForRemoval.push(
           this.skus.at(i).value?.image?.cloudinary?.public_id,
@@ -1848,8 +1886,6 @@ ${price ? `The price is ${price} pesos.` : ''}
     } else {
       this.skus.push(data.SKUForm);
     }
-
-    console.log('--------this.skus', this.skus.value);
   }
 
   get groupedErrors(): GroupedError[] {
@@ -1887,12 +1923,9 @@ ${price ? `The price is ${price} pesos.` : ''}
       ...image,
       vector: this.semanticImage.vector ?? [],
     };
-    console.log('-----------semanticImage', this.semanticImage);
 
     this.syncImagesToForm();
     this.updateFormErrors();
-
-    console.log('-----------productForm', this.productForm.value);
   }
 
   async openCameraSingle() {

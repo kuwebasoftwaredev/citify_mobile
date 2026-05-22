@@ -862,9 +862,11 @@
     <!-- Product Form Buttons -->
     <div class="gs-group-section">
       <div class="d-flex flex-column">
+        @if(status === 'PRESAVED') {
         <ion-button (click)="saveAsDraft()" size="medium" expand="block"
           >Save as draft</ion-button
         >
+        }
         <ion-button (click)="saveProduct()" size="medium" expand="block"
           >Save</ion-button
         >
