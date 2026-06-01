@@ -64,10 +64,10 @@ export class ProductService {
       );
   }
 
-  updateProduct(productCode: string, data: any): Observable<any> {
+  saveImagesMetadata(productCode: string, data: any): Observable<any> {
     if (environment.platform === 'mobile-dev') {
       const promise = Http.put({
-        url: `${environment.SERVER_URL_CLUSTERS}/product/updateProduct/${productCode}`,
+        url: `${environment.SERVER_URL_CLUSTERS}/product/saveImagesMetadata/${productCode}`,
         headers: { 'Content-Type': 'application/json' },
         params: {},
         data,
@@ -102,7 +102,58 @@ export class ProductService {
 
     return this.http
       .put(
-        `${environment.SERVER_URL_CLUSTERS}/product/updateProduct/${productCode}`,
+        `${environment.SERVER_URL_CLUSTERS}/product/saveImagesMetadata/${productCode}`,
+        data,
+        {
+          withCredentials: true,
+        },
+      )
+      .pipe(
+        map((response: any) => {
+          return response;
+        }),
+      );
+  }
+
+  productUpdateChecker(productCode: string, data: any): Observable<any> {
+    if (environment.platform === 'mobile-dev') {
+      const promise = Http.put({
+        url: `${environment.SERVER_URL_CLUSTERS}/product/productUpdateChecker/${productCode}`,
+        headers: { 'Content-Type': 'application/json' },
+        params: {},
+        data,
+        webFetchExtra: {
+          credentials: 'include',
+        },
+      });
+
+      return from(promise).pipe(
+        map((response: any) => {
+          return {
+            status: response.status,
+            success: response.data?.success,
+            data: response.data?.data ?? response.data,
+          };
+        }),
+        catchError((error: any) => {
+          if (error?.status === 401) {
+            return this.authService.rotateAccessToken().pipe(
+              switchMap(() => from(promise)),
+              catchError((refreshErr) => {
+                this.store.dispatch(logout());
+                return throwError(() => refreshErr);
+              }),
+            );
+          }
+
+          return throwError(() => error);
+        }),
+      );
+    }
+
+    return this.http
+      .put(
+        `${environment.SERVER_URL_CLUSTERS}/product/productUpdateChecker/${productCode}`,
         data,
         {
           withCredentials: true,

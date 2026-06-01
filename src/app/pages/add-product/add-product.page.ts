@@ -218,6 +218,10 @@ export class AddProductPage {
   }
 
   private syncImagesToForm(result?: OpenGalleryResult) {
+    console.log(
+      '----this.initialUpdateSnapshot22222222',
+      this.initialUpdateSnapshot,
+    );
     if (result) {
       this.copies = result?.copies;
       this.originals = result?.originals;
@@ -879,7 +883,7 @@ export class AddProductPage {
   }
 
   private normalizeProductSkus(skus: any): any[] {
-    const list = Array.isArray(skus) ? skus : [];
+    const list = _.isArray(skus) ? skus : [];
 
     return list.map((sku: any, index: number) => {
       const imageData = sku?.image ?? {};
@@ -919,6 +923,7 @@ export class AddProductPage {
         },
         price: Number(sku?.price ?? 0),
         stock: Number(sku?.stock ?? 0),
+        _id: sku._id,
       };
     });
   }
@@ -989,7 +994,7 @@ export class AddProductPage {
 
         this.hasVariants = _.size(product.variants) > 0;
 
-        if (Array.isArray(product.variants)) {
+        if (_.isArray(product.variants)) {
           this.variants.clear();
           product.variants.forEach((variant: any) => {
             this.variants.push(
@@ -1016,6 +1021,7 @@ export class AddProductPage {
               image: [sku.image ?? []],
               price: [sku.price ?? 0],
               stock: [sku.stock ?? 0],
+              _id: sku._id,
             }),
           );
         });
@@ -1034,6 +1040,11 @@ export class AddProductPage {
         }
         this.semanticImageFormControl?.updateValueAndValidity();
         this.initialUpdateSnapshot = this.buildComparableUpdatePayload();
+
+        console.log(
+          '())))))))))))))))))))))))))))))))))))))',
+          this.initialUpdateSnapshot,
+        );
       },
       error: (error: any) => {
         console.error('Error fetching product for edit:', error);
@@ -1069,9 +1080,12 @@ export class AddProductPage {
   private buildChangedUpdatePayload(
     currentPayload: Record<string, any>,
   ): Record<string, any> {
+    console.log('start', this.initialUpdateSnapshot);
     if (!this.initialUpdateSnapshot) {
       return { ...currentPayload };
     }
+    console.log('Initial Snapshot:', this.initialUpdateSnapshot);
+    console.log('Current Payload:', currentPayload);
 
     const changedPayload: Record<string, any> = {};
     Object.keys(currentPayload).forEach((key) => {
@@ -1079,7 +1093,10 @@ export class AddProductPage {
         changedPayload[key] = currentPayload[key];
       }
     });
-
+    if (!_.isEqual(this.copies, this.originals)) {
+      changedPayload['gallery'] = currentPayload['gallery'];
+    }
+    console.log('Changed Payload:', changedPayload);
     return changedPayload;
   }
 
@@ -1160,8 +1177,7 @@ ${price ? `The price is ${price} pesos.` : ''}
         (sku: any) => sku.image?.uploaded?.cloudinary,
       );
 
-      if (this.status === 'PRESAVED') 
-      await this.deleteMarkedCloudinaryImages();
+      if (this.status === 'PRESAVED') await this.deleteMarkedCloudinaryImages();
 
       if (isAllUploaded) {
         return [];
@@ -1232,8 +1248,7 @@ ${price ? `The price is ${price} pesos.` : ''}
     try {
       const isAllUploaded = this.copies.every((img) => img.uploaded.cloudinary);
 
-      if (this.status === 'PRESAVED') 
-      await this.deleteMarkedCloudinaryImages();
+      if (this.status === 'PRESAVED') await this.deleteMarkedCloudinaryImages();
 
       if (isAllUploaded) {
         return [];
@@ -1504,13 +1519,13 @@ ${price ? `The price is ${price} pesos.` : ''}
             };
 
             return this.productService
-              .updateProduct(this.productCode, prop)
+              .saveImagesMetadata(this.productCode, prop)
               .pipe(
                 tap((response: any) => {
-                  const updateProductResponse = response.data;
-                  const public_ids = (updateProductResponse?.gallery ?? []).map(
-                    (img: any) => img.cloudinary?.public_id,
-                  );
+                  const saveImagesMetadataResponse = response.data;
+                  const public_ids = (
+                    saveImagesMetadataResponse?.gallery ?? []
+                  ).map((img: any) => img.cloudinary?.public_id);
 
                   this.copies = this.copies.map((copy) => {
                     if (public_ids.includes(copy.cloudinary?.public_id)) {
@@ -1541,12 +1556,20 @@ ${price ? `The price is ${price} pesos.` : ''}
         });
     } else {
       const comparablePayload = this.buildComparableUpdatePayload(); // Get the comparable payload
+      console.log('-------------comparablePayload', comparablePayload);
       const productData = this.buildChangedUpdatePayload(comparablePayload); // Get the changed payload
+
+      console.log('-------------producData', productData);
+
+      return;
+      /*
+
       // Check if any field has changed
       const hasChangedField = (field: string): boolean =>
         Object.prototype.hasOwnProperty.call(productData, field);
 
       // Check if text embedding should be updated
+    
       const shouldUpdateTextEmbedding =
         hasChangedField('name') ||
         hasChangedField('description') ||
@@ -1575,6 +1598,7 @@ ${price ? `The price is ${price} pesos.` : ''}
         productData['textEmbedding'] = Array.from(textVector);
       }
 
+
       if (hasChangedField('semantic_image') && this.status !== 'PUBLISHED') {
         const imageVector = await this.imageEmbedService.embedImage(
           this.semanticImageFormControl?.value?.src,
@@ -1583,9 +1607,13 @@ ${price ? `The price is ${price} pesos.` : ''}
         this.semanticImageFormControl.patchValue(this.semanticImage);
         productData['imageEmbedding'] = Array.from(imageVector);
       }
+      */
 
-      const updateProduct$ = _.size(productData)
-        ? this.productService.updateProduct(this.productCode, productData)
+      const productUpdateChecker$ = _.size(productData)
+        ? this.productService.productUpdateChecker(
+            this.productCode,
+            productData,
+          )
         : of({
             data: {
               product: {
@@ -1595,12 +1623,13 @@ ${price ? `The price is ${price} pesos.` : ''}
             },
           });
 
-      updateProduct$
+      productUpdateChecker$
         .pipe(
           switchMap((response: any) => {
-            const updateProductResponse = response?.data;
+            const productUpdateCheckerResponse = response?.data;
             const updatedProduct =
-              updateProductResponse?.product ?? updateProductResponse;
+              productUpdateCheckerResponse?.product ??
+              productUpdateCheckerResponse;
             this.shopId = updatedProduct?.shopId ?? this.shopId;
 
             if (!this.shopId) {
@@ -1622,7 +1651,7 @@ ${price ? `The price is ${price} pesos.` : ''}
               ),
             }).pipe(
               map((uploadResponse) => ({
-                updateProductResponse,
+                productUpdateCheckerResponse,
                 uploadResponse,
               })),
             );
@@ -1663,7 +1692,7 @@ ${price ? `The price is ${price} pesos.` : ''}
             };
 
             return this.productService
-              .updateProduct(this.productCode, prop)
+              .saveImagesMetadata(this.productCode, prop)
               .pipe(
                 tap((response: any) => {
                   const updatedData = response?.data ?? {};
@@ -1704,7 +1733,7 @@ ${price ? `The price is ${price} pesos.` : ''}
           next: (finalResult) => {
             console.log(
               'Product updated successfully:',
-              finalResult.updateProductResponse?.status,
+              finalResult.productUpdateCheckerResponse?.status,
             );
             this.initialUpdateSnapshot = this.buildComparableUpdatePayload();
           },
