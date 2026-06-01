@@ -132,6 +132,7 @@ export class SkuFormComponent implements OnInit {
       image: [[], [Validators.required]],
       price: ['0.00', [Validators.required]],
       stock: [0, Validators.min(0)],
+      _id: [''],
     });
   }
 
@@ -157,6 +158,7 @@ export class SkuFormComponent implements OnInit {
       image: this.imageSKU,
       price: rawPrice,
       combination: this.denormalizeCombination(this.SKUForm.value.combination),
+      _id: this.SKUForm.value._id,
     });
 
     if (this.SKUForm.valid) {
@@ -176,6 +178,7 @@ export class SkuFormComponent implements OnInit {
         maximumFractionDigits: 2,
       }),
       stock: data.stock,
+      _id: data._id,
     });
   }
 

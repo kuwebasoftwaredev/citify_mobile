@@ -25,50 +25,30 @@
   <div class="d-flex flex-column gap-2">
     <!-- Product Images -->
     <div class="gs-group-section">
-      <div
-        class="gs-custom-form-ui-container"
-        [class.gs-custom-form-ui-container-error]="
+      <div class="gs-custom-form-ui-container" [class.gs-custom-form-ui-container-error]="
   productForm.get('images')?.invalid &&
   (productForm.get('images')?.touched || isProductFormSubmitted)
-"
-      >
+">
         @if (copies.length > 0) {
-        <div
-          style="
+        <div style="
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 7px;
-          "
-        >
-          <div
-            #scrollContainer
-            cdkDropList
-            cdkDropListOrientation="horizontal"
-            class="example-list"
-            (cdkDropListDropped)="drop($event)"
-          >
-            <div
-              cdkDrag
-              class="example-box"
-              *ngFor="let copy of copies; index as i"
-            >
+          ">
+          <div #scrollContainer cdkDropList cdkDropListOrientation="horizontal" class="example-list"
+            (cdkDropListDropped)="drop($event)">
+            <div cdkDrag class="example-box" *ngFor="let copy of copies; index as i">
               @if(!copy.uploaded.cloudinary && isUploadGalleryTriggered) {
               <span class="failed-upload-dot"></span>
               }
 
               <div class="image-actions">
                 <div class="buttons">
-                  <span
-                    (click)="removeGalleryImage(i,copy)"
-                    class="material-symbols-outlined"
-                  >
+                  <span (click)="removeGalleryImage(i,copy)" class="material-symbols-outlined">
                     delete
                   </span>
-                  <span
-                    (click)="openCropper(copy)"
-                    class="material-symbols-outlined"
-                  >
+                  <span (click)="openCropper(copy)" class="material-symbols-outlined">
                     crop
                   </span>
                   <span cdkDragHandle class="material-symbols-outlined">
@@ -77,52 +57,36 @@
                 </div>
               </div>
 
-              <img
-                [src]="copy.src"
-                alt=""
-                style="border-radius: var(--spoonwise-large-border-radius)"
-              />
+              <img [src]="copy.src" alt="" style="border-radius: var(--spoonwise-large-border-radius)" />
             </div>
           </div>
         </div>
         }
 
-        <div
-          style="
+        <div style="
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             gap: 7px;
-          "
-        >
+          ">
           <div class="d-flex flex-row gap-2 align-items-center">
             <div>
-              <button
-                mat-icon-button
-                color="primary"
-                style="
+              <button mat-icon-button color="primary" style="
                   width: 50px;
                   height: 50px;
                   border-radius: var(--spoonwise-border-radius) 0px 0px
                     var(--spoonwise-border-radius);
-                "
-                (click)="openGalleryForProduct()"
-              >
+                " (click)="openGalleryForProduct()">
                 <ion-icon name="image-sharp"></ion-icon>
               </button>
 
-              <button
-                mat-icon-button
-                color="primary"
-                style="
+              <button mat-icon-button color="primary" style="
                   width: 50px;
                   height: 50px;
                   border-radius: 0px var(--spoonwise-border-radius)
                     var(--spoonwise-border-radius) 0px;
-                "
-                (click)="openCamera()"
-              >
+                " (click)="openCamera()">
                 <ion-icon name="camera-sharp"></ion-icon>
               </button>
             </div>
@@ -150,17 +114,8 @@
 
     <div class="gs-group-section">
       <!-- Product Name -->
-      <ion-textarea
-        label="Product Name"
-        labelPlacement="floating"
-        type="text"
-        inputmode="text"
-        autocapitalize="words"
-        fill="outline"
-        maxlength="100"
-        autogrow="true"
-        formControlName="productName"
-      >
+      <ion-textarea label="Product Name" labelPlacement="floating" type="text" inputmode="text" autocapitalize="words"
+        fill="outline" maxlength="100" autogrow="true" formControlName="productName">
         @if( productForm.get('productName')?.valid &&
         (productForm.get('productName')?.touched ||
         productForm.get('productName')?.dirty)) {
@@ -173,16 +128,8 @@
       </ion-textarea>
 
       <!-- Product Description -->
-      <ion-textarea
-        label="Description"
-        labelPlacement="floating"
-        type="text"
-        inputmode="text"
-        fill="outline"
-        maxlength="1500"
-        autoGrow="true"
-        formControlName="description"
-      >
+      <ion-textarea label="Description" labelPlacement="floating" type="text" inputmode="text" fill="outline"
+        maxlength="1500" autoGrow="true" formControlName="description">
         @if( productForm.get('description')?.valid &&
         (productForm.get('description')?.touched ||
         productForm.get('description')?.dirty)) {
@@ -195,42 +142,28 @@
       </ion-textarea>
 
       <!-- Product Category -->
-      <div
-        class="gs-custom-form-ui-container"
-        [class.gs-custom-form-ui-container-error]="
+      <div class="gs-custom-form-ui-container" [class.gs-custom-form-ui-container-error]="
     productForm.get('category')?.invalid &&
     (productForm.get('category')?.touched || productForm.get('category')?.dirty)
-  "
-      >
+  ">
         <div class="gs-first-row-container">
-          <ion-label
-            [class.gs-custom-form-ui-text-error]="
+          <ion-label [class.gs-custom-form-ui-text-error]="
     productForm.get('category')?.invalid &&
-    (productForm.get('category')?.touched || productForm.get('category')?.dirty)"
-          >
-            Category</ion-label
-          >
+    (productForm.get('category')?.touched || productForm.get('category')?.dirty)">
+            Category</ion-label>
 
           <div class="select-button-wrapper ion-activatable ion-padding">
             <ion-ripple-effect></ion-ripple-effect>
-            <ion-select
-              [interfaceOptions]="{
+            <ion-select [interfaceOptions]="{
            breakpoints: [0, 0.3],
             initialBreakpoint: 0.3,
             cancelText: '', 
-          }"
-              placeholder="Select"
-              interface="modal"
-              multiple="false"
-              [compareWith]="compareCategoryByCode"
-              formControlName="category"
-            >
+          }" placeholder="Select" interface="modal" multiple="false" [compareWith]="compareCategoryByCode"
+              formControlName="category">
               <div>
                 @for (category of mainCategories; track category._id) {
-                <ion-select-option
-                  [value]="{ code: category.code, name: category.name }"
-                  >{{ category.name }}</ion-select-option
-                >
+                <ion-select-option [value]="{ code: category.code, name: category.name }">{{ category.name
+                  }}</ion-select-option>
                 }
               </div>
             </ion-select>
@@ -251,32 +184,21 @@
       <!-- Product Sub Category -->
       @if( category.value.length > 0) {
 
-      <div
-        class="gs-custom-form-ui-container"
-        [class.gs-custom-form-ui-container-error]="
+      <div class="gs-custom-form-ui-container" [class.gs-custom-form-ui-container-error]="
     productForm.get('subcategory')?.invalid &&
     (productForm.get('subcategory')?.touched || productForm.get('subcategory')?.dirty)
-  "
-      >
+  ">
         <div class="gs-first-row-container">
-          <ion-label
-            [class.gs-custom-form-ui-text-error]="
+          <ion-label [class.gs-custom-form-ui-text-error]="
     productForm.get('subcategory')?.invalid &&
     (productForm.get('subcategory')?.touched || productForm.get('subcategory')?.dirty)
-  "
-            >Sub Category
+  ">Sub Category
           </ion-label>
 
-          <div
-            class="text-capitalize select-button-wrapper ion-activatable subcategory-select-trigger"
+          <div class="text-capitalize select-button-wrapper ion-activatable subcategory-select-trigger"
             [class.subcategory-select-trigger--empty]="
               getSelectedSubcategoryNames().length === 0
-            "
-            style="font-size: 1rem"
-            fill="clear"
-            expand="block"
-            (click)="openSubcategoryModal()"
-          >
+            " style="font-size: 1rem" fill="clear" expand="block" (click)="openSubcategoryModal()">
             <ion-ripple-effect></ion-ripple-effect>
             <span class="subcategory-select-trigger__text">
               @if (getSelectedSubcategoryNames().length > 0) { @for (name of
@@ -285,20 +207,14 @@
             </span>
           </div>
 
-          <ion-modal
-            [isOpen]="isSubcategoryModalOpen"
-            (didDismiss)="closeSubcategoryModal()"
-            [breakpoints]="[0, 1]"
-            [initialBreakpoint]="0.7"
-          >
+          <ion-modal [isOpen]="isSubcategoryModalOpen" (didDismiss)="closeSubcategoryModal()" [breakpoints]="[0, 1]"
+            [initialBreakpoint]="0.7">
             <ng-template>
               <ion-header>
                 <ion-toolbar>
                   <ion-title></ion-title>
                   <ion-buttons slot="end">
-                    <ion-button (click)="closeSubcategoryModal()"
-                      >Close</ion-button
-                    >
+                    <ion-button (click)="closeSubcategoryModal()">Close</ion-button>
                   </ion-buttons>
                 </ion-toolbar>
               </ion-header>
@@ -308,18 +224,10 @@
                   @for (subcategory of
                   getSubcategoryListForSelectedCategories(); track
                   subcategory.code) { @if (isSubcategoryVisible(subcategory)) {
-                  <ion-item
-                    lines="none"
-                    [style.padding-left.px]="subcategory.depth * 15"
-                    button="true"
-                    detail="false"
-                    (click)="onSubcategoryItemClick(subcategory, $event)"
-                  >
-                    <ion-checkbox
-                      slot="start"
-                      [checked]="isSubcategorySelected(subcategory.code)"
-                      (ionChange)="toggleSubcategory(subcategory, $event.detail.checked)"
-                    ></ion-checkbox>
+                  <ion-item lines="none" [style.padding-left.px]="subcategory.depth * 15" button="true" detail="false"
+                    (click)="onSubcategoryItemClick(subcategory, $event)">
+                    <ion-checkbox slot="start" [checked]="isSubcategorySelected(subcategory.code)"
+                      (ionChange)="toggleSubcategory(subcategory, $event.detail.checked)"></ion-checkbox>
                     <ion-label>{{ subcategory.name }}</ion-label>
                   </ion-item>
                   } }
@@ -350,19 +258,10 @@
 
           <div class="select-button-wrapper ion-activatable">
             <ion-ripple-effect></ion-ripple-effect>
-            <ion-select
-              formControlName="publishingType"
-              aria-label="Fruit"
-              interface="action-sheet"
-              placeholder="Select fruit"
-              justify="end"
-              mode="ios"
-            >
-              <ion-select-option value="INSTANT"
-                >Publish Right Away</ion-select-option
-              >
-              <ion-select-option value="SCHEDULED"
-                >Set Schedule Date
+            <ion-select formControlName="publishingType" aria-label="Fruit" interface="action-sheet"
+              placeholder="Select fruit" justify="end" mode="ios">
+              <ion-select-option value="INSTANT">Publish Right Away</ion-select-option>
+              <ion-select-option value="SCHEDULED">Set Schedule Date
               </ion-select-option>
             </ion-select>
           </div>
@@ -386,12 +285,8 @@
 
               <ion-modal [keepContentsMounted]="true">
                 <ng-template>
-                  <ion-datetime
-                    id="datetime"
-                    minute-values="0,30"
-                    [min]="getTomorrowStartISO()"
-                    formControlName="scheduledDate"
-                  ></ion-datetime>
+                  <ion-datetime id="datetime" minute-values="0,30" [min]="getTomorrowStartISO()"
+                    formControlName="scheduledDate"></ion-datetime>
                 </ng-template>
               </ion-modal>
             </div>
@@ -407,27 +302,18 @@
 
     <div class="gs-group-section">
       <!-- Product Variants -->
-      <div
-        class="gs-custom-form-ui-container"
-        [class.gs-custom-form-ui-container-error]="
+      <div class="gs-custom-form-ui-container" [class.gs-custom-form-ui-container-error]="
     productForm.hasError('variantsRequired') &&
-  isProductFormSubmitted"
-      >
+  isProductFormSubmitted">
         <div class="gs-first-row-container">
-          <ion-label
-            [class.gs-custom-form-ui-text-error]="
+          <ion-label [class.gs-custom-form-ui-text-error]="
     productForm.hasError('variantsRequired') &&
-  isProductFormSubmitted"
-          >
+  isProductFormSubmitted">
             Product Variants
           </ion-label>
 
-          <ion-toggle
-            (ionChange)="onToggleChange($event)"
-            mode="ios"
-            id="hasVariantToggle"
-            [checked]="hasVariants"
-          ></ion-toggle>
+          <ion-toggle (ionChange)="onToggleChange($event)" mode="ios" id="hasVariantToggle"
+            [checked]="hasVariants"></ion-toggle>
 
           @if(productForm.get('variants')?.valid &&
           (productForm.get('variants')?.touched ||
@@ -445,79 +331,56 @@
 
         @if(this.hasVariants) {
 
-        <div
-          style="
+        <div style="
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 7px;
-          "
-        ></div>
+          "></div>
 
         <div class="variant-list">
           @for (variant of variants.controls; let i = $index; track variant) {
 
-          <div
-            style="
+          <div style="
               background-color: var(spoonwise-very-light-background);
               border-radius: var(--spoonwise-border-radius);
-            "
-          >
-            <div
-              style="
+            ">
+            <div style="
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-              "
-            >
+              ">
               <div>{{ variant.value.name | titlecase }}</div>
 
               <div class="d-flex flex-row">
-                <button
-                  mat-icon-button
-                  color="primary"
-                  style="
+                <button mat-icon-button color="primary" style="
                     width: 3rem;
                     height: 3rem;
                     border-radius: var(--spoonwise-border-radius) 0px 0px
                       var(--spoonwise-border-radius);
-                  "
-                  (click)="openVariantForm(i)"
-                >
+                  " (click)="openVariantForm(i)">
                   <span class="material-symbols-outlined"> edit_note </span>
                 </button>
 
-                <button
-                  mat-icon-button
-                  color="primary"
-                  style="
+                <button mat-icon-button color="primary" style="
                     width: 3rem;
                     height: 3rem;
                     border-radius: 0px var(--spoonwise-border-radius)
                       var(--spoonwise-border-radius) 0px;
-                  "
-                  (click)="removeVariant(i)"
-                >
+                  " (click)="removeVariant(i)">
                   <span class="material-symbols-outlined"> close_small </span>
                 </button>
               </div>
             </div>
 
-            <div
-              style="margin-top: 7px; display: flex; flex-wrap: wrap; gap: 7px"
-            ></div>
+            <div style="margin-top: 7px; display: flex; flex-wrap: wrap; gap: 7px"></div>
           </div>
 
           }
         </div>
 
         <div class="d-flex justify-content-center">
-          <ion-button
-            (click)="openVariantForm()"
-            class="w-50"
-            size="medium"
-            color="light"
-          >
+          <ion-button (click)="openVariantForm()" class="w-70" size="medium" color="light">
             <div class="d-flex w-100 align-items-center justify-content-center">
               <div><i class="bi bi-plus"></i></div>
               <div>Add Variant</div>
@@ -528,36 +391,23 @@
       </div>
 
       <!-- Product SKU -->
-      <div
-        class="gs-custom-form-ui-container"
-        [class.gs-custom-form-ui-container-error]="
+      <div class="gs-custom-form-ui-container" [class.gs-custom-form-ui-container-error]="
     productForm.get('skus')?.invalid &&
-    (productForm.get('skus')?.touched || productForm.get('skus')?.dirty)"
-      >
+    (productForm.get('skus')?.touched || productForm.get('skus')?.dirty)">
         <div class="gs-first-row-container">
-          <ion-label
-            [class.gs-custom-form-ui-text-error]="
+          <ion-label [class.gs-custom-form-ui-text-error]="
     productForm.get('skus')?.invalid &&
-    (productForm.get('skus')?.touched || productForm.get('skus')?.dirty)"
-          >
+    (productForm.get('skus')?.touched || productForm.get('skus')?.dirty)">
             Product SKU
           </ion-label>
 
           @if(productForm.get('skus')?.valid &&
           (productForm.get('skus')?.touched || productForm.get('skus')?.dirty))
           {
-          <i
-            slot="end"
-            class="bi bi-check-circle-fill text-success"
-            style="position: absolute; right: 43px"
-          ></i>
+          <i slot="end" class="bi bi-check-circle-fill text-success" style="position: absolute; right: 43px"></i>
           } @else if(productForm.get('skus')?.invalid &&
           (productForm.get('skus')?.touched || productForm.get('skus')?.dirty)){
-          <i
-            slot="end"
-            class="bi bi-exclamation-circle-fill text-danger"
-            style="position: absolute; right: 43px"
-          ></i>
+          <i slot="end" class="bi bi-exclamation-circle-fill text-danger" style="position: absolute; right: 43px"></i>
           }
         </div>
 
@@ -565,40 +415,25 @@
           <p>Enter a unique SKU to identify this product.</p>
         </div>
 
-        <div
-          style="
+        <div style="
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 7px;
-          "
-        ></div>
+          "></div>
 
         <div class="variant-list">
           @for (sku of skus.controls; let i = $index; track sku) {
-          <div
-            class="d-flex flex-column gap-1"
-            style="
+          <div class="d-flex flex-column gap-1" style="
               background-color: var(spoonwise-very-light-background);
               border-radius: var(--spoonwise-border-radius);
-            "
-          >
-            <div
-              class="d-flex flex-row gap-1 align-items-center justify-content-between"
-            ></div>
+            ">
+            <div class="d-flex flex-row gap-1 align-items-center justify-content-between"></div>
 
-            <div
-              class="d-flex flex-row gap-1 justify-content-between align-items-center"
-            >
+            <div class="d-flex flex-row gap-1 justify-content-between align-items-center">
               <div class="d-flex flex-row gap-2">
                 <div>
-                  <img
-                    [src]="sku.value?.image?.copy?.src"
-                    class="image"
-                    alt=""
-                    srcset=""
-                    width="80"
-                  />
+                  <img [src]="sku.value?.image?.copy?.src" class="image" alt="" srcset="" width="80" />
                 </div>
 
                 <div class="d-flex flex-column gap-1">
@@ -616,31 +451,21 @@
               </div>
 
               <div class="d-flex flex-column">
-                <button
-                  mat-icon-button
-                  color="primary"
-                  style="
+                <button mat-icon-button color="primary" style="
                     width: 3rem;
                     height: 3rem;
                     border-radius: var(--spoonwise-border-radius)
                       var(--spoonwise-border-radius) 0px 0px;
-                  "
-                  (click)="openSKUForm(i)"
-                >
+                  " (click)="openSKUForm(i)">
                   <span class="material-symbols-outlined"> edit_note </span>
                 </button>
 
-                <button
-                  mat-icon-button
-                  color="primary"
-                  style="
+                <button mat-icon-button color="primary" style="
                     width: 3rem;
                     height: 3rem;
                     border-radius: 0px 0px var(--spoonwise-border-radius)
                       var(--spoonwise-border-radius);
-                  "
-                  (click)="removeSKU(i)"
-                >
+                  " (click)="removeSKU(i)">
                   <span class="material-symbols-outlined"> close_small </span>
                 </button>
               </div>
@@ -650,15 +475,8 @@
           }
 
           <div class="d-flex justify-content-center">
-            <ion-button
-              (click)="openSKUForm()"
-              class="w-50"
-              size="medium"
-              color="light"
-            >
-              <div
-                class="d-flex w-100 align-items-center justify-content-center"
-              >
+            <ion-button (click)="openSKUForm()" class="w-70" size="medium" color="light">
+              <div class="d-flex w-100 align-items-center justify-content-center">
                 <div><i class="bi bi-plus"></i></div>
                 <div>Add SKU</div>
               </div>
@@ -670,86 +488,61 @@
 
     <!-- Semantic Image Search -->
     <div class="gs-group-section">
-      <div
-        style="position: relative"
+      <div style="position: relative"
         class="gs-custom-form-ui-container d-flex flex-column gap-2 align-items-space-evenly justify-content-center"
         [class.gs-custom-form-ui-container-error]="
           semanticImageFormControl.invalid &&
           (semanticImageFormControl.touched || isProductFormSubmitted)
-        "
-      >
+        ">
         @if (this.semanticImage.copy.src) {
-        <div
-          style="
+        <div style="
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 7px;
             margin-bottom: 14px;
-          "
-        >
+          ">
           <div class="example-box">
             <div class="image-actions">
               <div class="buttons">
-                <span
-                  class="material-symbols-outlined"
-                  (click)="removeSemanticImage()"
-                >
+                <span class="material-symbols-outlined" (click)="removeSemanticImage()">
                   delete
                 </span>
-                <span
-                  class="material-symbols-outlined"
-                  (click)="openCropperSemanticImage()"
-                >
+                <span class="material-symbols-outlined" (click)="openCropperSemanticImage()">
                   crop
                 </span>
               </div>
             </div>
 
-            <img
-              [src]="this.semanticImage.copy.src"
-              alt=""
-              style="border-radius: var(--spoonwise-large-border-radius)"
-            />
+            <img [src]="this.semanticImage.copy.src" alt=""
+              style="border-radius: var(--spoonwise-large-border-radius)" />
           </div>
         </div>
         } @else {
-        <div
-          style="
+        <div style="
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             gap: 7px;
-          "
-        >
+          ">
           <div class="d-flex flex-row gap-2 align-items-center">
             <div>
-              <button
-                mat-icon-button
-                color="primary"
-                style="
+              <button mat-icon-button color="primary" style="
                   width: 50px;
                   height: 50px;
                   border-radius: var(--spoonwise-border-radius) 0px 0px
                     var(--spoonwise-border-radius);
-                "
-                (click)="openGalleryForSingle()"
-              >
+                " (click)="openGalleryForSingle()">
                 <ion-icon name="image-sharp"></ion-icon>
               </button>
 
-              <button
-                mat-icon-button
-                color="primary"
-                style="
+              <button mat-icon-button color="primary" style="
                   width: 50px;
                   height: 50px;
                   border-radius: 0px var(--spoonwise-border-radius)
                     var(--spoonwise-border-radius) 0px;
-                "
-                (click)="openCameraSingle()"
-              >
+                " (click)="openCameraSingle()">
                 <ion-icon name="camera-sharp"></ion-icon>
               </button>
             </div>
@@ -768,15 +561,12 @@
         }
 
         <div class="d-flex align-items-center justify-content-center">
-          <ion-chip
-            color="tertiary"
-            style="
+          <ion-chip color="tertiary" style="
               width: 170px;
               display: flex;
               align-items: center;
               justify-content: center;
-            "
-          >
+            ">
             <ion-avatar>
               <span class="material-symbols-outlined" style="font-size: 20px">
                 wand_stars
@@ -836,12 +626,8 @@
           </ion-text>
         </div>
         <div>
-          <ion-button
-            (click)="uploadProductGalleryAPI(productCode, '')"
-            size="medium"
-            expand="block"
-            >Re-upload Images</ion-button
-          >
+          <ion-button (click)="uploadProductGalleryAPI(productCode, '')" size="medium" expand="block">Re-upload
+            Images</ion-button>
           <ion-text color="danger" class="d-block">
             <small>
               {{ someGalleryImagesNotUploadedInCloudinary }} image(s) failed to
@@ -862,23 +648,17 @@
     <!-- Product Form Buttons -->
     <div class="gs-group-section">
       <div class="d-flex flex-column">
-        <ion-button (click)="saveAsDraft()" size="medium" expand="block"
-          >Save as draft</ion-button
-        >
-        <ion-button (click)="saveProduct()" size="medium" expand="block"
-          >Save</ion-button
-        >
+        @if(status === 'PRESAVED') {
+        <ion-button (click)="saveAsDraft()" size="medium" expand="block">Save as draft</ion-button>
+        }
+        <ion-button (click)="saveProduct()" size="medium" expand="block">Save</ion-button>
 
         <div class="d-flex flex-column gap-1 w-100 text-center pt-2">
           <ion-text>
             By publishing this product, you confirm that it complies with
-            <ion-text color="primary" (click)="openTerms('marketplace')"
-              >Citimo’s Marketplace Terms</ion-text
-            >
+            <ion-text color="primary" (click)="openTerms('marketplace')">Citimo’s Marketplace Terms</ion-text>
             and
-            <ion-text color="primary" (click)="openTerms('prohibitedItems')"
-              >Prohibited Items Policy</ion-text
-            >.
+            <ion-text color="primary" (click)="openTerms('prohibitedItems')">Prohibited Items Policy</ion-text>.
           </ion-text>
         </div>
       </div>

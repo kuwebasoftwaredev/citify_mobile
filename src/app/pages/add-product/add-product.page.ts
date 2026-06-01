@@ -218,6 +218,10 @@ export class AddProductPage {
   }
 
   private syncImagesToForm(result?: OpenGalleryResult) {
+    console.log(
+      '----this.initialUpdateSnapshot22222222',
+      this.initialUpdateSnapshot,
+    );
     if (result) {
       this.copies = result?.copies;
       this.originals = result?.originals;
@@ -240,8 +244,6 @@ export class AddProductPage {
 
     this.semanticImageFormControl?.markAsTouched();
     this.semanticImageFormControl?.updateValueAndValidity();
-
-    console.log('this.productForm', this.productForm.value);
   }
 
   onScheduleChange(event: any) {
@@ -298,7 +300,6 @@ export class AddProductPage {
       let file: File;
 
       if (copy.notWebpath) {
-        console.log('--------0');
         // cropped image
         const blob = await base64ToBlob(copy.img);
         file = new File([blob], `photo_${index}.png`, {
@@ -313,8 +314,6 @@ export class AddProductPage {
         const blob = await base64ToBlob(
           `data:image/jpeg;base64,${result.data}`,
         );
-
-        console.log('--------1', blob);
         file = new File([blob], `photo_${index}.png`, { type: blob.type });
       }
 
@@ -340,7 +339,6 @@ export class AddProductPage {
   }
 
   drop(event: any) {
-    console.log('drop');
     moveItemInArray(this.copies, event.previousIndex, event.currentIndex);
     this.isGalleryOrderChanged = true;
     this.syncImagesToForm();
@@ -503,7 +501,6 @@ export class AddProductPage {
   }
 
   private async autoSelectCategory() {
-    console.log('autoSelectCategory');
     if (!this.categoryTree.length) return;
 
     const query = this.autoSelectCategoryService.buildQuery(
@@ -511,10 +508,7 @@ export class AddProductPage {
       this.productForm.get('description')?.value ?? '',
     );
 
-    console.log('query', query);
-
     if (!query) return;
-    console.log('this.mainCategories', this.mainCategories);
     const suggestion = await this.autoSelectCategoryService.pickBestMatch(
       query,
       this.mainCategories.map((node: any) => ({
@@ -522,8 +516,6 @@ export class AddProductPage {
         name: node.name ?? '',
       })),
     );
-
-    console.log('suggestion', suggestion);
 
     if (suggestion) {
       this.category.setValue([
@@ -533,7 +525,6 @@ export class AddProductPage {
   }
 
   private async autoSelectSubcategory() {
-    console.log('autoSelectSubcategory');
     if (!this.categoryTree.length) return;
     if (!this.hasSelectedCategory()) return;
 
@@ -552,11 +543,7 @@ export class AddProductPage {
         labelPath: node.labelPath ?? '',
       })),
     );
-    console.log(
-      'getSubcategoriesForSelectedCategories',
-      this.getSubcategoriesForSelectedCategories(),
-    );
-    console.log('suggestion', suggestion);
+
     if (!suggestion) return;
 
     const chain = this.getSubcategorySelectionChain(Number(suggestion.code));
@@ -801,8 +788,6 @@ export class AddProductPage {
     this.subcategory.setValue(Array.from(selected.values()));
     this.subcategory.markAsTouched();
     this.subcategory.updateValueAndValidity();
-
-    console.log('this.productForm.value', this.productForm.value);
   }
 
   private normalizeSelectedSubcategories(value: any): SelectedSubcategory[] {
@@ -898,7 +883,7 @@ export class AddProductPage {
   }
 
   private normalizeProductSkus(skus: any): any[] {
-    const list = Array.isArray(skus) ? skus : [];
+    const list = _.isArray(skus) ? skus : [];
 
     return list.map((sku: any, index: number) => {
       const imageData = sku?.image ?? {};
@@ -938,6 +923,7 @@ export class AddProductPage {
         },
         price: Number(sku?.price ?? 0),
         stock: Number(sku?.stock ?? 0),
+        _id: sku._id,
       };
     });
   }
@@ -990,9 +976,10 @@ export class AddProductPage {
   private fetchProductForEdit(productCode: string) {
     this.productService.getProduct(productCode).subscribe({
       next: (response: any) => {
-        console.log('response', response);
         const product = response.data;
         if (!product) return;
+
+        this.status = product.status || 'PRESAVED';
 
         this.shopId = product.shopId ?? this.shopId;
 
@@ -1007,7 +994,7 @@ export class AddProductPage {
 
         this.hasVariants = _.size(product.variants) > 0;
 
-        if (Array.isArray(product.variants)) {
+        if (_.isArray(product.variants)) {
           this.variants.clear();
           product.variants.forEach((variant: any) => {
             this.variants.push(
@@ -1034,6 +1021,7 @@ export class AddProductPage {
               image: [sku.image ?? []],
               price: [sku.price ?? 0],
               stock: [sku.stock ?? 0],
+              _id: sku._id,
             }),
           );
         });
@@ -1052,6 +1040,11 @@ export class AddProductPage {
         }
         this.semanticImageFormControl?.updateValueAndValidity();
         this.initialUpdateSnapshot = this.buildComparableUpdatePayload();
+
+        console.log(
+          '())))))))))))))))))))))))))))))))))))))',
+          this.initialUpdateSnapshot,
+        );
       },
       error: (error: any) => {
         console.error('Error fetching product for edit:', error);
@@ -1087,9 +1080,12 @@ export class AddProductPage {
   private buildChangedUpdatePayload(
     currentPayload: Record<string, any>,
   ): Record<string, any> {
+    console.log('start', this.initialUpdateSnapshot);
     if (!this.initialUpdateSnapshot) {
       return { ...currentPayload };
     }
+    console.log('Initial Snapshot:', this.initialUpdateSnapshot);
+    console.log('Current Payload:', currentPayload);
 
     const changedPayload: Record<string, any> = {};
     Object.keys(currentPayload).forEach((key) => {
@@ -1097,7 +1093,10 @@ export class AddProductPage {
         changedPayload[key] = currentPayload[key];
       }
     });
-
+    if (!_.isEqual(this.copies, this.originals)) {
+      changedPayload['gallery'] = currentPayload['gallery'];
+    }
+    console.log('Changed Payload:', changedPayload);
     return changedPayload;
   }
 
@@ -1178,7 +1177,7 @@ ${price ? `The price is ${price} pesos.` : ''}
         (sku: any) => sku.image?.uploaded?.cloudinary,
       );
 
-      await this.deleteMarkedCloudinaryImages();
+      if (this.status === 'PRESAVED') await this.deleteMarkedCloudinaryImages();
 
       if (isAllUploaded) {
         return [];
@@ -1249,7 +1248,7 @@ ${price ? `The price is ${price} pesos.` : ''}
     try {
       const isAllUploaded = this.copies.every((img) => img.uploaded.cloudinary);
 
-      await this.deleteMarkedCloudinaryImages();
+      if (this.status === 'PRESAVED') await this.deleteMarkedCloudinaryImages();
 
       if (isAllUploaded) {
         return [];
@@ -1381,7 +1380,7 @@ ${price ? `The price is ${price} pesos.` : ''}
         this.publicIdCloudinaryForRemoval,
       ),
     );
-    console.log('-----------x', x);
+
     this.publicIdCloudinaryForRemoval = [];
   }
 
@@ -1519,16 +1518,14 @@ ${price ? `The price is ${price} pesos.` : ''}
               ...(_.size(semanticImage) && { semanticImage }),
             };
 
-            console.log('-----props', prop);
-
             return this.productService
-              .updateProduct(this.productCode, prop)
+              .saveImagesMetadata(this.productCode, prop)
               .pipe(
                 tap((response: any) => {
-                  const updateProductResponse = response.data;
-                  const public_ids = (updateProductResponse?.gallery ?? []).map(
-                    (img: any) => img.cloudinary?.public_id,
-                  );
+                  const saveImagesMetadataResponse = response.data;
+                  const public_ids = (
+                    saveImagesMetadataResponse?.gallery ?? []
+                  ).map((img: any) => img.cloudinary?.public_id);
 
                   this.copies = this.copies.map((copy) => {
                     if (public_ids.includes(copy.cloudinary?.public_id)) {
@@ -1549,7 +1546,6 @@ ${price ? `The price is ${price} pesos.` : ''}
         .subscribe({
           next: (finalResult) => {
             console.log('Product saved successfully:', finalResult);
-            console.log('this.copies', this.copies);
 
             // Handle success (e.g., show a success message, navigate away, etc.)
           },
@@ -1560,12 +1556,20 @@ ${price ? `The price is ${price} pesos.` : ''}
         });
     } else {
       const comparablePayload = this.buildComparableUpdatePayload(); // Get the comparable payload
+      console.log('-------------comparablePayload', comparablePayload);
       const productData = this.buildChangedUpdatePayload(comparablePayload); // Get the changed payload
+
+      console.log('-------------producData', productData);
+
+      return;
+      /*
+
       // Check if any field has changed
       const hasChangedField = (field: string): boolean =>
         Object.prototype.hasOwnProperty.call(productData, field);
 
       // Check if text embedding should be updated
+    
       const shouldUpdateTextEmbedding =
         hasChangedField('name') ||
         hasChangedField('description') ||
@@ -1574,7 +1578,7 @@ ${price ? `The price is ${price} pesos.` : ''}
         hasChangedField('variants') ||
         hasChangedField('skus');
 
-      if (shouldUpdateTextEmbedding) {
+      if (shouldUpdateTextEmbedding && this.status !== 'PUBLISHED') {
         const skuSummary = this.productForm.value.skus.map((sku: any) => {
           return this.buildSkuEmbeddingText(sku.combination, sku.price);
         });
@@ -1594,7 +1598,8 @@ ${price ? `The price is ${price} pesos.` : ''}
         productData['textEmbedding'] = Array.from(textVector);
       }
 
-      if (hasChangedField('semantic_image')) {
+
+      if (hasChangedField('semantic_image') && this.status !== 'PUBLISHED') {
         const imageVector = await this.imageEmbedService.embedImage(
           this.semanticImageFormControl?.value?.src,
         );
@@ -1602,9 +1607,13 @@ ${price ? `The price is ${price} pesos.` : ''}
         this.semanticImageFormControl.patchValue(this.semanticImage);
         productData['imageEmbedding'] = Array.from(imageVector);
       }
+      */
 
-      const updateProduct$ = _.size(productData)
-        ? this.productService.updateProduct(this.productCode, productData)
+      const productUpdateChecker$ = _.size(productData)
+        ? this.productService.productUpdateChecker(
+            this.productCode,
+            productData,
+          )
         : of({
             data: {
               product: {
@@ -1614,12 +1623,13 @@ ${price ? `The price is ${price} pesos.` : ''}
             },
           });
 
-      updateProduct$
+      productUpdateChecker$
         .pipe(
           switchMap((response: any) => {
-            const updateProductResponse = response?.data;
+            const productUpdateCheckerResponse = response?.data;
             const updatedProduct =
-              updateProductResponse?.product ?? updateProductResponse;
+              productUpdateCheckerResponse?.product ??
+              productUpdateCheckerResponse;
             this.shopId = updatedProduct?.shopId ?? this.shopId;
 
             if (!this.shopId) {
@@ -1641,7 +1651,7 @@ ${price ? `The price is ${price} pesos.` : ''}
               ),
             }).pipe(
               map((uploadResponse) => ({
-                updateProductResponse,
+                productUpdateCheckerResponse,
                 uploadResponse,
               })),
             );
@@ -1682,7 +1692,7 @@ ${price ? `The price is ${price} pesos.` : ''}
             };
 
             return this.productService
-              .updateProduct(this.productCode, prop)
+              .saveImagesMetadata(this.productCode, prop)
               .pipe(
                 tap((response: any) => {
                   const updatedData = response?.data ?? {};
@@ -1721,7 +1731,10 @@ ${price ? `The price is ${price} pesos.` : ''}
         )
         .subscribe({
           next: (finalResult) => {
-            console.log('Product updated successfully:', finalResult);
+            console.log(
+              'Product updated successfully:',
+              finalResult.productUpdateCheckerResponse?.status,
+            );
             this.initialUpdateSnapshot = this.buildComparableUpdatePayload();
           },
           error: (error) => {
@@ -1756,19 +1769,79 @@ ${price ? `The price is ${price} pesos.` : ''}
 
     // Get the component instance
     const { data, role } = await modal.onDidDismiss();
-    console.log('role', role, 'data', data);
+
     if (role === 'save' && data) {
       this.addVariant(data, i);
     }
   }
+
+  private normalizeVariantOptionList(value: any): string[] {
+    if (!Array.isArray(value)) return [];
+    return value
+      .map((item: any) => String(item ?? '').trim())
+      .filter((item: string) => !!item);
+  }
+
+  private buildValueFrequencyMap(values: string[]): Map<string, number> {
+    const map = new Map<string, number>();
+    values.forEach((value) => {
+      map.set(value, (map.get(value) ?? 0) + 1);
+    });
+    return map;
+  }
+
+  private shouldResetSkuCombinationsOnVariantChange(
+    previousVariant: any,
+    nextVariant: any,
+    isNewVariant: boolean,
+  ): boolean {
+    if (isNewVariant) return true;
+    if (!previousVariant) return true;
+
+    const previousName = String(previousVariant?.name ?? '').trim();
+    const nextName = String(nextVariant?.name ?? '').trim();
+    if (previousName !== nextName) return true;
+
+    const previousOptions = this.normalizeVariantOptionList(
+      previousVariant?.options,
+    );
+    const nextOptions = this.normalizeVariantOptionList(nextVariant?.options);
+
+    if (nextOptions.length < previousOptions.length) {
+      return true;
+    }
+
+    // Reset only when existing options were removed/renamed.
+    // Pure additions to the current option list should not reset SKU combinations.
+    const previousCounts = this.buildValueFrequencyMap(previousOptions);
+    const nextCounts = this.buildValueFrequencyMap(nextOptions);
+
+    for (const [option, count] of previousCounts.entries()) {
+      if ((nextCounts.get(option) ?? 0) < count) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   addVariant(formgroup: FormGroup, i: number | null) {
+    const previousVariant = i !== null ? this.variants.at(i)?.value : null;
+    const shouldReset = this.shouldResetSkuCombinationsOnVariantChange(
+      previousVariant,
+      formgroup?.value,
+      i === null,
+    );
+
     if (i !== null) {
       this.variants.setControl(i, formgroup); // update existing variant
     } else {
       this.variants.push(formgroup); // add new variant
     }
 
-    this.clearSKUsCombination();
+    if (shouldReset) {
+      this.clearSKUsCombination();
+    }
     this.sheetRef.dismiss();
   }
   removeVariant(index: number) {
@@ -1823,9 +1896,6 @@ ${price ? `The price is ${price} pesos.` : ''}
     // Get the component instance
     const { data, role } = await modal.onDidDismiss();
 
-    console.log('role', role);
-    console.log('data', data);
-
     if (role === 'save' && data) {
       this.addSKU(data, i);
     } else {
@@ -1835,9 +1905,6 @@ ${price ? `The price is ${price} pesos.` : ''}
 
   addSKU(data: any, i: any) {
     if (!_.isNil(i)) {
-      console.log('i', this.skus.at(i).value);
-      console.log('skuForm', data);
-
       if (data.newImage) {
         this.publicIdCloudinaryForRemoval.push(
           this.skus.at(i).value?.image?.cloudinary?.public_id,
@@ -1848,8 +1915,6 @@ ${price ? `The price is ${price} pesos.` : ''}
     } else {
       this.skus.push(data.SKUForm);
     }
-
-    console.log('--------this.skus', this.skus.value);
   }
 
   get groupedErrors(): GroupedError[] {
@@ -1887,12 +1952,9 @@ ${price ? `The price is ${price} pesos.` : ''}
       ...image,
       vector: this.semanticImage.vector ?? [],
     };
-    console.log('-----------semanticImage', this.semanticImage);
 
     this.syncImagesToForm();
     this.updateFormErrors();
-
-    console.log('-----------productForm', this.productForm.value);
   }
 
   async openCameraSingle() {
