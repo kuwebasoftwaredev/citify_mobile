@@ -218,10 +218,6 @@ export class AddProductPage {
   }
 
   private syncImagesToForm(result?: OpenGalleryResult) {
-    console.log(
-      '----this.initialUpdateSnapshot22222222',
-      this.initialUpdateSnapshot,
-    );
     if (result) {
       this.copies = result?.copies;
       this.originals = result?.originals;
@@ -1039,11 +1035,8 @@ export class AddProductPage {
           this.semanticImageFormControl?.setValue(null);
         }
         this.semanticImageFormControl?.updateValueAndValidity();
-        this.initialUpdateSnapshot = this.buildComparableUpdatePayload();
-
-        console.log(
-          '())))))))))))))))))))))))))))))))))))))',
-          this.initialUpdateSnapshot,
+        this.initialUpdateSnapshot = _.cloneDeep(
+          this.buildComparableUpdatePayload(),
         );
       },
       error: (error: any) => {
@@ -1057,7 +1050,7 @@ export class AddProductPage {
       this.productForm.value.category,
     );
 
-    return {
+    const comparablePayload = {
       gallery: this.gallery.value ?? [],
       name: this.productForm.value.productName ?? '',
       status: this.status,
@@ -1075,6 +1068,8 @@ export class AddProductPage {
       skus: this.normalizeSKUImage(this.productForm.value.skus ?? []),
       variants: this.productForm.value.variants ?? [],
     };
+
+    return comparablePayload;
   }
 
   private buildChangedUpdatePayload(
@@ -1093,9 +1088,6 @@ export class AddProductPage {
         changedPayload[key] = currentPayload[key];
       }
     });
-    if (!_.isEqual(this.copies, this.originals)) {
-      changedPayload['gallery'] = currentPayload['gallery'];
-    }
     console.log('Changed Payload:', changedPayload);
     return changedPayload;
   }
@@ -1556,20 +1548,13 @@ ${price ? `The price is ${price} pesos.` : ''}
         });
     } else {
       const comparablePayload = this.buildComparableUpdatePayload(); // Get the comparable payload
-      console.log('-------------comparablePayload', comparablePayload);
       const productData = this.buildChangedUpdatePayload(comparablePayload); // Get the changed payload
-
-      console.log('-------------producData', productData);
-
-      return;
       /*
-
       // Check if any field has changed
       const hasChangedField = (field: string): boolean =>
         Object.prototype.hasOwnProperty.call(productData, field);
 
       // Check if text embedding should be updated
-    
       const shouldUpdateTextEmbedding =
         hasChangedField('name') ||
         hasChangedField('description') ||
@@ -1597,7 +1582,6 @@ ${price ? `The price is ${price} pesos.` : ''}
         );
         productData['textEmbedding'] = Array.from(textVector);
       }
-
 
       if (hasChangedField('semantic_image') && this.status !== 'PUBLISHED') {
         const imageVector = await this.imageEmbedService.embedImage(
