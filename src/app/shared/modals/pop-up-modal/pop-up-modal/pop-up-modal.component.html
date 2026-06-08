@@ -1,0 +1,27 @@
+<div class="ls-modal-shell">
+  <div class="ls-modal-image" *ngIf="this.data.file">
+    <img [src]="data.file" [alt]="data.title || 'Modal image'" />
+  </div>
+
+  <div class="ls-modal-content">
+    <h3 style="text-align: center">{{ this.data.title }}</h3>
+
+
+    <div class="d-flex flex-column gap-1 w-100 text-center pt-2">
+      <ion-text [innerHtml]="this.data.message">
+
+      </ion-text>
+    </div>
+
+    <div class="buttons">
+
+      <ion-button style="background: #f6f6f6;" *ngIf="this.data.closeBtn" (click)="close()" size="medium"
+        expand="block"> <span class="material-symbols-outlined text-light"> close_small </span></ion-button>
+      <ion-button *ngIf="this.data.custombutton" style="min-width:200px" (click)="close()" size="medium" expand="block">
+        <div [innerHtml]="safeHtml"></div>
+      </ion-button>
+      <ion-button *ngIf="this.data.yesBtn" (click)="yes()" size="medium" expand="block">Yes</ion-button>
+      <ion-button *ngIf="this.data.noBtn" (click)="no()" size="medium" expand="block">No</ion-button>
+    </div>
+  </div>
+</div>

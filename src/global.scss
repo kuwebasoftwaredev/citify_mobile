@@ -128,6 +128,22 @@ ion-modal {
   --border-radius: 50px !important;
 }
 
+.pop-up-modal-panel {
+  overflow: visible !important;
+}
+
+.cdk-overlay-pane.pop-up-modal-panel {
+  overflow: visible !important;
+}
+
+.pop-up-modal-panel .mat-mdc-dialog-container,
+.pop-up-modal-panel .mat-mdc-dialog-inner-container,
+.pop-up-modal-panel .mat-mdc-dialog-surface,
+.pop-up-modal-panel .mdc-dialog__container,
+.pop-up-modal-panel .mdc-dialog__surface {
+  overflow: visible !important;
+}
+
 ion-icon {
   font-size: x-large;
 }
