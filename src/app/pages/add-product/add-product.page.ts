@@ -28,7 +28,6 @@ import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { Filesystem } from '@capacitor/filesystem';
 import { VariantFormComponent } from './variant-form/variant-form/variant-form.component';
 import { minTomorrowValidator } from 'src/app/shared/form-validators/min-tomorrow.validator';
-import { ToastController } from '@ionic/angular';
 import { variantsRequiredIfEnabled } from 'src/app/shared/form-validators/variantsRequiredIfEnabled.validator';
 import { VariantFormComponent as a } from 'src/app/shared/swipe-sheets/variant-form/variant-form/variant-form.component';
 import { SkuFormComponent } from 'src/app/shared/swipe-sheets/sku-form/sku-form/sku-form.component';
@@ -42,6 +41,7 @@ import {
   FormErrorMap,
   FormService,
 } from 'src/app/core/services/form/form.service';
+import { PopUpModalComponent } from 'src/app/shared/modals/pop-up-modal/pop-up-modal/pop-up-modal.component';
 import { TermsComponentComponent } from 'src/app/shared/swipe-sheets/terms/terms.component/terms.component.component';
 import { ImageEmbedService } from 'src/app/core/services/transformer/image-embed/image-embed.service';
 import { TextEmbedService } from 'src/app/core/services/transformer/text-embed/text-embed';
@@ -59,6 +59,7 @@ import {
 } from 'rxjs';
 import { ProductService } from 'src/app/core/services/product/product.service';
 import { CategoryService } from 'src/app/core/services/category/category.service';
+import { MatDialog } from '@angular/material/dialog';
 
 type GroupedError = {
   control: string;
@@ -111,12 +112,12 @@ export type TermsType =
   standalone: false,
 })
 export class AddProductPage {
-  sheetRef: any;
-  editingIndex: number | null = null;
+  public sheetRef: any;
+  public editingIndex: number | null = null;
   public showCropper = false;
   public webcamImage: object | null | string = null; //latest snapshot
-  originals: Image[] = [];
-  copies: Image[] = [];
+  public originals: Image[] = [];
+  public copies: Image[] = [];
   public productForm!: FormGroup;
 
   constructor(
@@ -131,6 +132,7 @@ export class AddProductPage {
     private productService: ProductService,
     private categoryService: CategoryService,
     private route: ActivatedRoute,
+    private dialog: MatDialog,
   ) {
     this.createProductForm();
   }
@@ -1376,6 +1378,22 @@ ${price ? `The price is ${price} pesos.` : ''}
     this.publicIdCloudinaryForRemoval = [];
   }
 
+  private presentInstantProductUpdateSuccessModal() {
+    this.dialog.open(PopUpModalComponent, {
+      width: '500px',
+      panelClass: 'pop-up-modal-panel',
+      data: {
+        deletebutton: false,
+        closeBtn: false,
+        custombutton: true,
+        customBtnText: `<b> Great! <span style="font-size: 30px;line-height: 1;vertical-align: middle;">🎉</span></b>`,
+        title: 'Product Updated Successfully',
+        message: `The changes to your product have been saved and are now visible to customers.`,
+        file: 'assets/icons/party.png',
+      },
+    });
+  }
+
   async saveProduct() {
     // Check if form is valid
     this.isProductFormSubmitted = true;
@@ -1615,9 +1633,14 @@ ${price ? `The price is ${price} pesos.` : ''}
               productUpdateCheckerResponse?.product ??
               productUpdateCheckerResponse;
             this.shopId = updatedProduct?.shopId ?? this.shopId;
+            const isInstantProductUpdate =
+              !!productUpdateCheckerResponse?.isInstantProductUpdate;
 
-            if (!this.shopId) {
-              return of(response);
+            if (!this.shopId || isInstantProductUpdate) {
+              return of({
+                productUpdateCheckerResponse,
+                uploadResponse: null,
+              });
             }
 
             return forkJoin({
@@ -1641,6 +1664,10 @@ ${price ? `The price is ${price} pesos.` : ''}
             );
           }),
           switchMap((result: any) => {
+            if (result?.productUpdateCheckerResponse?.isInstantProductUpdate) {
+              return of(result);
+            }
+
             const gallery = this.copies
               .filter(
                 (img) => img.uploaded?.cloudinary && !img.uploaded?.database,
@@ -1719,6 +1746,11 @@ ${price ? `The price is ${price} pesos.` : ''}
               'Product updated successfully:',
               finalResult.productUpdateCheckerResponse?.status,
             );
+            if (
+              finalResult.productUpdateCheckerResponse?.isInstantProductUpdate
+            ) {
+              this.presentInstantProductUpdateSuccessModal();
+            }
             this.initialUpdateSnapshot = this.buildComparableUpdatePayload();
           },
           error: (error) => {

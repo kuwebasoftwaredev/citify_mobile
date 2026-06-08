@@ -45,8 +45,9 @@
 
               <div class="image-actions">
                 <div class="buttons">
-                  <span (click)="removeGalleryImage(i,copy)" class="material-symbols-outlined">
-                    delete
+                  <span style="margin-right: 10px;" (click)="removeGalleryImage(i,copy)"
+                    class="material-symbols-outlined">
+                    close_small
                   </span>
                   <span (click)="openCropper(copy)" class="material-symbols-outlined">
                     crop
@@ -54,6 +55,8 @@
                   <span cdkDragHandle class="material-symbols-outlined">
                     swap_horiz
                   </span>
+
+
                 </div>
               </div>
 
@@ -73,8 +76,8 @@
           <div class="d-flex flex-row gap-2 align-items-center">
             <div>
               <button mat-icon-button color="primary" style="
-                  width: 50px;
-                  height: 50px;
+                 
+                  padding: 10px;
                   border-radius: var(--spoonwise-border-radius) 0px 0px
                     var(--spoonwise-border-radius);
                 " (click)="openGalleryForProduct()">
@@ -82,8 +85,8 @@
               </button>
 
               <button mat-icon-button color="primary" style="
-                  width: 50px;
-                  height: 50px;
+                 
+                  padding: 10px;
                   border-radius: 0px var(--spoonwise-border-radius)
                     var(--spoonwise-border-radius) 0px;
                 " (click)="openCamera()">
@@ -250,58 +253,8 @@
       }
     </div>
 
+    <!-- Product Variants -->
     <div class="gs-group-section">
-      <!-- Publishing Option -->
-      <div class="gs-custom-form-ui-container">
-        <div class="gs-first-row-container">
-          <ion-label> Publishing Option</ion-label>
-
-          <div class="select-button-wrapper ion-activatable">
-            <ion-ripple-effect></ion-ripple-effect>
-            <ion-select formControlName="publishingType" aria-label="Fruit" interface="action-sheet"
-              placeholder="Select fruit" justify="end" mode="ios">
-              <ion-select-option value="INSTANT">Publish Right Away</ion-select-option>
-              <ion-select-option value="SCHEDULED">Set Schedule Date
-              </ion-select-option>
-            </ion-select>
-          </div>
-
-          @if( productForm.get('publishingType')?.valid &&
-          (productForm.get('publishingType')?.touched ||
-          productForm.get('publishingType')?.dirty)) {
-          <i slot="end" class="bi bi-check-circle-fill text-success"></i>
-          }@else if(productForm.get('publishingType')?.invalid &&
-          (productForm.get('publishingType')?.touched ||
-          productForm.get('publishingType')?.dirty)){
-          <i slot="end" class="bi bi-exclamation-circle-fill text-danger"></i>
-          }
-        </div>
-
-        @if(productForm.get('publishingType')?.value === 'SCHEDULED') {
-        <div>
-          <div class="gs-first-row-container">
-            <div class="datetime-wrapper">
-              <ion-datetime-button datetime="datetime"></ion-datetime-button>
-
-              <ion-modal [keepContentsMounted]="true">
-                <ng-template>
-                  <ion-datetime id="datetime" minute-values="0,30" [min]="getTomorrowStartISO()"
-                    formControlName="scheduledDate"></ion-datetime>
-                </ng-template>
-              </ion-modal>
-            </div>
-          </div>
-        </div>
-
-        <div class="small-text-size d-block">
-          <p>Product will be published automatically at this date and time.</p>
-        </div>
-        }
-      </div>
-    </div>
-
-    <div class="gs-group-section">
-      <!-- Product Variants -->
       <div class="gs-custom-form-ui-container" [class.gs-custom-form-ui-container-error]="
     productForm.hasError('variantsRequired') &&
   isProductFormSubmitted">
@@ -354,8 +307,7 @@
 
               <div class="d-flex flex-row">
                 <button mat-icon-button color="primary" style="
-                    width: 3rem;
-                    height: 3rem;
+                   padding: 10px;
                     border-radius: var(--spoonwise-border-radius) 0px 0px
                       var(--spoonwise-border-radius);
                   " (click)="openVariantForm(i)">
@@ -363,8 +315,7 @@
                 </button>
 
                 <button mat-icon-button color="primary" style="
-                    width: 3rem;
-                    height: 3rem;
+                    padding: 10px;
                     border-radius: 0px var(--spoonwise-border-radius)
                       var(--spoonwise-border-radius) 0px;
                   " (click)="removeVariant(i)">
@@ -452,8 +403,7 @@
 
               <div class="d-flex flex-column">
                 <button mat-icon-button color="primary" style="
-                    width: 3rem;
-                    height: 3rem;
+                    padding: 10px 14px;
                     border-radius: var(--spoonwise-border-radius)
                       var(--spoonwise-border-radius) 0px 0px;
                   " (click)="openSKUForm(i)">
@@ -461,13 +411,14 @@
                 </button>
 
                 <button mat-icon-button color="primary" style="
-                    width: 3rem;
-                    height: 3rem;
+                    padding: 10px 14px;
                     border-radius: 0px 0px var(--spoonwise-border-radius)
                       var(--spoonwise-border-radius);
                   " (click)="removeSKU(i)">
                   <span class="material-symbols-outlined"> close_small </span>
                 </button>
+
+
               </div>
             </div>
           </div>
@@ -506,7 +457,7 @@
             <div class="image-actions">
               <div class="buttons">
                 <span class="material-symbols-outlined" (click)="removeSemanticImage()">
-                  delete
+                  close_small
                 </span>
                 <span class="material-symbols-outlined" (click)="openCropperSemanticImage()">
                   crop
@@ -582,6 +533,56 @@
             search using photos.
           </p>
         </div>
+      </div>
+    </div>
+
+    <!-- Publishing Option -->
+    <div class="gs-group-section">
+      <div class="gs-custom-form-ui-container">
+        <div class="gs-first-row-container">
+          <ion-label> Publishing Option</ion-label>
+
+          <div class="select-button-wrapper ion-activatable">
+            <ion-ripple-effect></ion-ripple-effect>
+            <ion-select formControlName="publishingType" aria-label="Fruit" interface="action-sheet"
+              placeholder="Select fruit" justify="end" mode="ios">
+              <ion-select-option value="INSTANT">Publish Right Away</ion-select-option>
+              <ion-select-option value="SCHEDULED">Set Schedule Date
+              </ion-select-option>
+            </ion-select>
+          </div>
+
+          @if( productForm.get('publishingType')?.valid &&
+          (productForm.get('publishingType')?.touched ||
+          productForm.get('publishingType')?.dirty)) {
+          <i slot="end" class="bi bi-check-circle-fill text-success"></i>
+          }@else if(productForm.get('publishingType')?.invalid &&
+          (productForm.get('publishingType')?.touched ||
+          productForm.get('publishingType')?.dirty)){
+          <i slot="end" class="bi bi-exclamation-circle-fill text-danger"></i>
+          }
+        </div>
+
+        @if(productForm.get('publishingType')?.value === 'SCHEDULED') {
+        <div>
+          <div class="gs-first-row-container">
+            <div class="datetime-wrapper">
+              <ion-datetime-button datetime="datetime"></ion-datetime-button>
+
+              <ion-modal [keepContentsMounted]="true">
+                <ng-template>
+                  <ion-datetime id="datetime" minute-values="0,30" [min]="getTomorrowStartISO()"
+                    formControlName="scheduledDate"></ion-datetime>
+                </ng-template>
+              </ion-modal>
+            </div>
+          </div>
+        </div>
+
+        <div class="small-text-size d-block">
+          <p>Product will be published automatically at this date and time.</p>
+        </div>
+        }
       </div>
     </div>
 
