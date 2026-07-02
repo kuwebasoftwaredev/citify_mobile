@@ -64,10 +64,10 @@ export class ProductService {
       );
   }
 
-  saveImagesMetadata(productCode: string, data: any): Observable<any> {
+  saveImagesMetadata(id: string, data: any): Observable<any> {
     if (environment.platform === 'mobile-dev') {
       const promise = Http.put({
-        url: `${environment.SERVER_URL_CLUSTERS}/product/saveImagesMetadata/${productCode}`,
+        url: `${environment.SERVER_URL_CLUSTERS}/product/saveImagesMetadata/${id}`,
         headers: { 'Content-Type': 'application/json' },
         params: {},
         data,
@@ -102,7 +102,7 @@ export class ProductService {
 
     return this.http
       .put(
-        `${environment.SERVER_URL_CLUSTERS}/product/saveImagesMetadata/${productCode}`,
+        `${environment.SERVER_URL_CLUSTERS}/product/saveImagesMetadata/${id}`,
         data,
         {
           withCredentials: true,
