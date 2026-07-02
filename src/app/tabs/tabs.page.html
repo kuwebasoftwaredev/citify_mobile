@@ -2,12 +2,12 @@
   <ion-tab-bar slot="bottom">
     <ion-tab-button tab="home" href="/tabs/home">
       <span class="material-symbols-outlined"> storefront </span>
-      <ion-label>Home</ion-label>
+      <!-- <ion-label>Home</ion-label> -->
     </ion-tab-button>
 
     <ion-tab-button tab="deals" href="/tabs/deals">
-      <span class="material-symbols-outlined"> map </span>
-      <ion-label>Deals</ion-label>
+      <span class="material-symbols-outlined"> search </span>
+      <!-- <ion-label>Search</ion-label> -->
     </ion-tab-button>
 
     @if (auth$ | async; as auth) { @if (auth.role === 'seller') {
@@ -21,26 +21,23 @@
     } @else {
     <ion-tab-button tab="cart" href="/tabs/cart ">
       <ion-icon name="bag-handle-sharp"></ion-icon>
-      <ion-label>Cart</ion-label>
+      <!-- <ion-label>Cart</ion-label> -->
     </ion-tab-button>
     } }
 
     <ion-tab-button tab="chats" href="/tabs/chats">
-      <span class="material-symbols-outlined"> forum </span>
-      <ion-label>Chats</ion-label>
+      <span class="material-symbols-outlined"> chat_bubble </span>
+      <!-- <ion-label>Chats</ion-label> -->
     </ion-tab-button>
 
     <ion-tab-button tab="profile" href="/tabs/profile">
       <ion-avatar>
         @if( auth$ | async; as auth ) {
-        <img
-          [src]="auth.role === 'buyer' ? auth.profile_picture.url : auth.shop?.logo"
-          alt="avatar"
-        />
+        <img [src]="auth.role === 'buyer' ? auth.profile_picture.url : auth.shop?.logo" alt="avatar" />
         }
       </ion-avatar>
 
-      <ion-label>You</ion-label>
+      <!-- <ion-label>You</ion-label> -->
     </ion-tab-button>
   </ion-tab-bar>
 </ion-tabs>

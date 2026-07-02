@@ -9,7 +9,7 @@ export class TextEmbedService {
     if (!this.model) {
       this.model = await pipeline(
         'feature-extraction',
-        'Xenova/all-MiniLM-L6-v2',
+        'Xenova/all-mpnet-base-v2',
       );
     }
 

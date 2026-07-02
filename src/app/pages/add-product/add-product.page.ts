@@ -60,6 +60,7 @@ import {
 import { ProductService } from 'src/app/core/services/product/product.service';
 import { CategoryService } from 'src/app/core/services/category/category.service';
 import { MatDialog } from '@angular/material/dialog';
+import { RequestProductUpdateService } from 'src/app/core/services/request-product-update/request-product-update';
 
 type GroupedError = {
   control: string;
@@ -130,6 +131,7 @@ export class AddProductPage {
     private autoSelectCategoryService: AutoSelectCategoryService,
     private cloudinaryService: CloudinaryService,
     private productService: ProductService,
+    private requestProductUpdateService: RequestProductUpdateService,
     private categoryService: CategoryService,
     private route: ActivatedRoute,
     private dialog: MatDialog,
@@ -977,7 +979,7 @@ export class AddProductPage {
         const product = response.data;
         if (!product) return;
 
-        this.status = product.status || 'PRESAVED';
+        this.status = product.status[product.status.length - 1] || 'PRESAVED';
 
         this.shopId = product.shopId ?? this.shopId;
 
@@ -1389,12 +1391,46 @@ ${price ? `The price is ${price} pesos.` : ''}
         customBtnText: `<b> Great! <span style="font-size: 30px;line-height: 1;vertical-align: middle;">🎉</span></b>`,
         title: 'Product Updated Successfully',
         message: `The changes to your product have been saved and are now visible to customers.`,
-        file: 'assets/icons/party.png',
+        file: 'assets/icons/success.png',
       },
     });
   }
 
+  private presentRequestProductUpdateSuccessModal() {
+    this.dialog.open(PopUpModalComponent, {
+      width: '500px',
+      panelClass: 'pop-up-modal-panel',
+      data: {
+        deletebutton: false,
+        closeBtn: false,
+        custombutton: true,
+        customBtnText: `<b> I'll Wait! <span style="font-size: 30px;line-height: 1;vertical-align: middle;">🎉</span></b>`,
+        title: 'Product Update in Progress',
+        message: `Your product update is being processed. It may take a few moments for the changes to be visible to customers. Thank you for your patience!`,
+        file: 'assets/icons/time-management.png',
+      },
+    });
+  }
+
+  async generatevector() {
+    const textVector = await this.textEmbedService.embed(
+      `${this.productForm.value.productName}`,
+    );
+
+    console.log('--------------textVector', Object.values(textVector));
+  }
+
   async saveProduct() {
+    // Generate text embedding (Float32Array ~3 KB)
+    // const textVector = await this.textEmbedService.embed(
+    //   `Product name: ${this.productForm.value.productName}
+    //   Description: ${this.productForm.value.description}`,
+    // );
+
+    //.
+
+    // console.log('--------------textVector-2', Object.values(textVector));
+
     // Check if form is valid
     this.isProductFormSubmitted = true;
     this.productForm.markAllAsTouched();
@@ -1406,7 +1442,7 @@ ${price ? `The price is ${price} pesos.` : ''}
     ) as any;
 
     // Check if form is valid
-    if (this.productForm.invalid) return;
+    // if (this.productForm.invalid) return;
 
     if (!this.productCode) {
       const categoryList = this.normalizeSelectedCategories(
@@ -1419,6 +1455,8 @@ ${price ? `The price is ${price} pesos.` : ''}
       );
       this.semanticImage.vector = imageVector;
 
+      console.log('--------------imageVector', imageVector);
+
       // Set image embedding to form control
       this.semanticImageFormControl.patchValue(this.semanticImage);
 
@@ -1427,19 +1465,14 @@ ${price ? `The price is ${price} pesos.` : ''}
         return this.buildSkuEmbeddingText(sku.combination, sku.price);
       });
 
-      // Generate text embedding (Float32Array ~3 KB)
-      const textVector = await this.textEmbedService.embed(
-        `Product name: ${this.productForm.value.productName}.
-         Description: ${this.productForm.value.description}.
-         Category: ${categoryList.map((cat) => cat.name).join(', ')}.
-         Subcategory: ${this.getSelectedSubcategoryNames().join(', ')}.
-         Variants: ${this.productForm.value.variants
-           .map(
-             (v: any) => `${v.name} 
-         options: ${v.options?.join(', ')}`,
-           )
-           .join('; ')}.SKU Details: ${skuSummary.join(' ')}`.trim(),
-      );
+      //    Category: ${categoryList.map((cat) => cat.name).join(', ')}.
+      //  Subcategory: ${this.getSelectedSubcategoryNames().join(', ')}`,
+      //  Variants: ${this.productForm.value.variants
+      //    .map(
+      //      (v: any) => `${v.name}
+      //  options: ${v.options?.join(', ')}`,
+      //    )
+      //    .join('; ')}.SKU Details: ${skuSummary.join(' ')}`.trim(),
 
       // Data to be sent to backend
       const productData = {
@@ -1455,9 +1488,16 @@ ${price ? `The price is ${price} pesos.` : ''}
           cloudinary: this.semanticImage.cloudinary,
           upload: this.semanticImage.uploaded,
         },
-        textEmbedding: Array.from(textVector),
-        imageEmbedding: Array.from(imageVector),
-        skus: this.normalizeSKUImage(this.productForm.value.skus),
+        // textEmbedding: Array.from(textVector),
+        // imageEmbedding: Array.from(imageVector),
+        skus: this.normalizeSKUImage(this.productForm.value.skus).map(
+          (sku: any) => ({
+            combination: sku.combination,
+            price: sku.price,
+            stock: sku.stock,
+            image: sku.image,
+          }),
+        ),
         variants: this.productForm.value.variants,
       };
 
@@ -1469,7 +1509,8 @@ ${price ? `The price is ${price} pesos.` : ''}
             const saveProductResponse = response.data;
             const savedProduct =
               saveProductResponse?.product ?? saveProductResponse;
-            this.productCode = savedProduct?.productCode;
+
+            this.productCode = savedProduct?.id;
             this.shopId = savedProduct?.shopId;
 
             if (_.size(this.gallery) === 0) {
@@ -1558,6 +1599,21 @@ ${price ? `The price is ${price} pesos.` : ''}
             console.log('Product saved successfully:', finalResult);
 
             // Handle success (e.g., show a success message, navigate away, etc.)
+            if (finalResult) {
+              this.dialog.open(PopUpModalComponent, {
+                width: '500px',
+                panelClass: 'pop-up-modal-panel',
+                data: {
+                  deletebutton: false,
+                  closeBtn: false,
+                  custombutton: true,
+                  customBtnText: `<b> Great! <span style="font-size: 30px;line-height: 1;vertical-align: middle;">🎉</span></b>`,
+                  title: 'Product Created Successfully',
+                  message: `Your product is being processed. It may take a few moments for your product to be visible to customers. Thank you for your patience!`,
+                  file: 'assets/icons/success.png',
+                },
+              });
+            }
           },
           error: (error) => {
             console.error('Error saving product:', error);
@@ -1610,7 +1666,7 @@ ${price ? `The price is ${price} pesos.` : ''}
         productData['imageEmbedding'] = Array.from(imageVector);
       }
       */
-
+      let isInstantProductUpdate = true;
       const productUpdateChecker$ = _.size(productData)
         ? this.productService.productUpdateChecker(
             this.productCode,
@@ -1664,7 +1720,11 @@ ${price ? `The price is ${price} pesos.` : ''}
             );
           }),
           switchMap((result: any) => {
-            if (result?.productUpdateCheckerResponse?.isInstantProductUpdate) {
+            if (result?.productUpdateCheckerResponse?.isRequestProductUpdate) {
+              isInstantProductUpdate = false;
+            }
+
+            if (isInstantProductUpdate) {
               return of(result);
             }
 
@@ -1702,8 +1762,11 @@ ${price ? `The price is ${price} pesos.` : ''}
               ...(semanticImage && { semanticImage }),
             };
 
-            return this.productService
-              .saveImagesMetadata(this.productCode, prop)
+            const requestId =
+              result?.productUpdateCheckerResponse?.product?.product?.id;
+
+            return this.requestProductUpdateService
+              .saveImagesMetadata(this.productCode, requestId, prop)
               .pipe(
                 tap((response: any) => {
                   const updatedData = response?.data ?? {};
@@ -1742,14 +1805,10 @@ ${price ? `The price is ${price} pesos.` : ''}
         )
         .subscribe({
           next: (finalResult) => {
-            console.log(
-              'Product updated successfully:',
-              finalResult.productUpdateCheckerResponse?.status,
-            );
-            if (
-              finalResult.productUpdateCheckerResponse?.isInstantProductUpdate
-            ) {
+            if (isInstantProductUpdate) {
               this.presentInstantProductUpdateSuccessModal();
+            } else {
+              this.presentRequestProductUpdateSuccessModal();
             }
             this.initialUpdateSnapshot = this.buildComparableUpdatePayload();
           },

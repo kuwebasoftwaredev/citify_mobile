@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from 'src/environments/environment';
 import { Http } from '@capacitor-community/http';
-import { catchError, from, switchMap, throwError, map } from 'rxjs';
+import { catchError, from, map, Observable, switchMap, throwError } from 'rxjs';
 import { Auth } from '../auth/auth.service';
 import { Store } from '@ngrx/store';
 import { logout } from 'src/app/state/auth/auth.actions';
@@ -10,29 +10,24 @@ import { logout } from 'src/app/state/auth/auth.actions';
 @Injectable({
   providedIn: 'root',
 })
-export class Shop {
+export class RequestProductUpdateService {
   constructor(
     private http: HttpClient,
     private authService: Auth,
     private store: Store,
   ) {}
 
-  getShops() {
+  saveImagesMetadata(
+    productId: string,
+    requestId: string,
+    data: any,
+  ): Observable<any> {
     if (environment.platform === 'mobile-dev') {
-      const municipalities = [
-        'Cebu City',
-        'Manila City',
-        'Bacolod City',
-        'Bago City',
-      ];
-
-      const query = encodeURIComponent(JSON.stringify(municipalities));
-
-      const promise = Http.get({
-        url: `${environment.SERVER_URL_CLUSTERS}/shop/getShops?municipality=${query}`,
+      const promise = Http.put({
+        url: `${environment.SERVER_URL_CLUSTERS}/request-product-update/saveImagesMetadata/${productId}/${requestId}`,
         headers: { 'Content-Type': 'application/json' },
         params: {},
-        data: {},
+        data,
         webFetchExtra: {
           credentials: 'include',
         },
@@ -43,8 +38,7 @@ export class Shop {
           return {
             status: response.status,
             success: response.data?.success,
-            redis: response.data?.redis,
-            data: response.data?.data,
+            data: response.data?.data ?? response.data,
           };
         }),
         catchError((error: any) => {
@@ -64,18 +58,16 @@ export class Shop {
     }
 
     return this.http
-      .get(
-        `${environment.SERVER_URL_CLUSTERS}/shop/getShops?municipality=["Cebu City"]`,
+      .put(
+        `${environment.SERVER_URL_CLUSTERS}/request-product-update/saveImagesMetadata/${productId}/${requestId}`,
+        data,
         {
           withCredentials: true,
         },
       )
       .pipe(
         map((response: any) => {
-          return {
-            status: response.status,
-            data: response.data,
-          };
+          return response;
         }),
       );
   }

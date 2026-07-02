@@ -132,7 +132,7 @@
 
       <!-- Product Description -->
       <ion-textarea label="Description" labelPlacement="floating" type="text" inputmode="text" fill="outline"
-        maxlength="1500" autoGrow="true" formControlName="description">
+        maxlength="6000" autoGrow="true" formControlName="description">
         @if( productForm.get('description')?.valid &&
         (productForm.get('description')?.touched ||
         productForm.get('description')?.dirty)) {
@@ -158,7 +158,7 @@
           <div class="select-button-wrapper ion-activatable ion-padding">
             <ion-ripple-effect></ion-ripple-effect>
             <ion-select [interfaceOptions]="{
-           breakpoints: [0, 0.3],
+           breakpoints: [0, 1],
             initialBreakpoint: 0.3,
             cancelText: '', 
           }" placeholder="Select" interface="modal" multiple="false" [compareWith]="compareCategoryByCode"
