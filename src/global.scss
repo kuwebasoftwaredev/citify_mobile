@@ -71,12 +71,13 @@ body {
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import "@ionic/angular/css/palettes/dark.system.css";
-
 @import "swiper/css";
 @import "swiper/css/pagination";
 @import "swiper/css/navigation";
-
 @import "~bootstrap/dist/css/bootstrap.min.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 ion-header,
 ion-toolbar {
@@ -87,8 +88,8 @@ ion-toolbar {
   --background: var(--spoonwise-primary) !important;
   --color: #ffffff;
   transition: transform 0.85s ease;
-  border-radius: 0px 0px var(--spoonwise-border-radius)
-    var(--spoonwise-border-radius);
+  // border-radius: 0px 0px var(--spoonwise-border-radius)
+  //   var(--spoonwise-border-radius);
 }
 
 // Modal
