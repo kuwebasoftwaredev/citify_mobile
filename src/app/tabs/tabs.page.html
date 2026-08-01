@@ -1,43 +1,67 @@
 <ion-tabs (ionTabsDidChange)="vibrate()">
-  <ion-tab-bar slot="bottom">
-    <ion-tab-button tab="home" href="/tabs/home">
-      <span class="material-symbols-outlined"> storefront </span>
-      <!-- <ion-label>Home</ion-label> -->
+
+  @if (auth$ | async; as auth) {
+  @if (auth.role === 'seller') {
+
+  <!-- <ion-tab-button tab="product" href="/tabs/product" class="sell-container">
+    <div class="sell-btn">
+      <span class="material-symbols-outlined text-3xl text-white">add</span>
+    </div>
+
+  </ion-tab-button> -->
+  }
+  }
+
+  <ion-tab-bar slot="bottom"
+    class="mx-3 rounded-3xl bg-white/90 text-gray-300 shadow-sm dark:bg-slate-900 dark:text-gray-100">
+    <ion-tab-button tab="home" href="/tabs/home" class="flex flex-col gap-0 text-gray-300 dark:text-gray-600">
+      <span class="material-symbols-outlined text-3xl">storefront</span>
+      <span class="text-[12px] leading-none">Home</span>
     </ion-tab-button>
 
-    <ion-tab-button tab="deals" href="/tabs/deals">
-      <span class="material-symbols-outlined"> search </span>
-      <!-- <ion-label>Search</ion-label> -->
+    <ion-tab-button tab="deals" href="/tabs/deals" class="text-gray-300 dark:text-gray-600">
+      <span class="material-symbols-outlined text-3xl">explore</span>
+      <span class="text-[12px] leading-none">Explore</span>
     </ion-tab-button>
 
-    @if (auth$ | async; as auth) { @if (auth.role === 'seller') {
 
-    <ion-tab-button tab="product" href="/tabs/product">
-      <div class="circle-tab-btn">
-        <ion-icon name="add-sharp"></ion-icon>
-      </div>
-    </ion-tab-button>
 
-    } @else {
-    <ion-tab-button tab="cart" href="/tabs/cart ">
+    @if (auth$ | async; as auth) {
+    @if (auth.role !== 'seller') {
+    <ion-tab-button tab="cart" href="/tabs/cart " class="text-gray-300 dark:text-gray-600">
       <ion-icon name="bag-handle-sharp"></ion-icon>
-      <!-- <ion-label>Cart</ion-label> -->
     </ion-tab-button>
-    } }
+    } @else {
+    <!-- <ion-tab-button tab="product" href="/tabs/product">
+      <span class="material-symbols-outlined text-3xl text-transparent">explore</span>
+      <span class="text-[12px] leading-none">Sell</span>
+    </ion-tab-button> -->
 
-    <ion-tab-button tab="chats" href="/tabs/chats">
-      <span class="material-symbols-outlined"> chat_bubble </span>
-      <!-- <ion-label>Chats</ion-label> -->
+    <ion-tab-button tab="product" href="/tabs/product" class="sell-container ">
+      <div class="sell-btn ">
+        <span class="material-symbols-outlined text-3xl ">add</span>
+      </div>
+
+    </ion-tab-button>
+    }
+    }
+
+    <ion-tab-button tab="chats" href="/tabs/chats"
+      class="flex flex-col items-center justify-center gap-0 text-gray-300 dark:text-gray-600">
+
+      <span class="material-symbols-outlined text-3xl">chat_bubble</span>
+      <span class="text-[12px] leading-none">Messages</span>
     </ion-tab-button>
 
-    <ion-tab-button tab="profile" href="/tabs/profile">
-      <ion-avatar>
+    <ion-tab-button tab="profile" href="/tabs/profile" class="text-gray-300 dark:text-gray-600">
+      <ion-avatar class="w-8 h-8 mt-[7px] mb-[1px]">
         @if( auth$ | async; as auth ) {
         <img [src]="auth.role === 'buyer' ? auth.profile_picture.url : auth.shop?.logo" alt="avatar" />
         }
-      </ion-avatar>
 
-      <!-- <ion-label>You</ion-label> -->
+      </ion-avatar>
+      <div><span class="text-[12px] leading-none">Profile</span></div>
+
     </ion-tab-button>
   </ion-tab-bar>
 </ion-tabs>

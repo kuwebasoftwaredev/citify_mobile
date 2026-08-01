@@ -1,27 +1,56 @@
-<!-- <ion-header [translucent]="false">
-  <ion-toolbar>
-    <ion-title>
-      <img [src]="'./assets/spoonwise-logo-full.png'" style="width: 100px" />
-    </ion-title>
-  </ion-toolbar>
-</ion-header> -->
+<ion-header [translucent]="true" class="transparent-header">
+  <ion-toolbar class="mt-1">
+    <div class="flex items-space-between selection:file:">
+      <ion-title>
+        <img [src]="'./assets/logo_citimo.png'" class=" w-8 " />
+      </ion-title>
 
-<ion-content [fullscreen]="false">
+      <div class="relative pr-4">
+        <ion-button fill="solid" class="gs-circle-btn">
+          <span class="material-symbols-outlined text-2xl">
+            notifications
+          </span>
+        </ion-button>
+
+        <ion-badge color="danger"
+          class="absolute top-1 right-4 min-w-5 h-5 flex items-center justify-center rounded-full text-[10px] px-1">
+          2
+        </ion-badge>
+      </div>
+    </div>
+
+
+    <div class="flex items-center  px-3 ">
+      <div class="relative flex-1">
+        <ion-searchbar placeholder="" animated="true">
+        </ion-searchbar>
+
+        <div class="pointer-events-none absolute left-14 top-1/2 -translate-y-1/2 flex items-center text-gray-500">
+          <span>Search&nbsp;</span>
+
+          <span (animationiteration)="nextHint()" class="animated-word  font-weight-bold">
+            {{ currentWord }}
+          </span>
+        </div>
+
+        <span class="material-symbols-outlined absolute right-5 top-1/2 -translate-y-1/2 z-10 text-3xl ">
+          center_focus_strong
+        </span>
+      </div>
+
+      <ion-button fill="solid" class="gs-circle-btn ">
+        <span class="material-symbols-outlined text-2xl">tune</span>
+      </ion-button>
+    </div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="map-content">
   <!-- <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
     <ion-refresher-content> </ion-refresher-content>
   </ion-refresher> -->
 
-  <app-map
-    [height]="'100%'"
-    [zIndex]="'1'"
-    [cities]="cities$ | async"
-    [borderRadius]="'0px'"
-    [detectCurrentLocation]="true"
-    [checkDBLocation]="true"
-    [disabled]="false"
-    [radius]="3000"
-    [nearestShopButton]="true"
-    [topRatedShopButton]="true"
-    (dragend)="onMapDragend($event)"
-  ></app-map>
+  <app-map [zIndex]="'1'" [cities]="cities$ | async" [borderRadius]="'0px'" [detectCurrentLocation]="true"
+    [checkDBLocation]="true" [disabled]="false" [radius]="3000" [nearestShopButton]="true" [topRatedShopButton]="true"
+    (dragend)="onMapDragend($event)"></app-map>
 </ion-content>

@@ -1,3 +1,83 @@
 .change-color {
   background: #ffffff !important;
 }
+.map-content {
+  --padding-top: 0;
+  --padding-bottom: 0;
+}
+
+ion-searchbar {
+  --border-radius: var(--spoonwise-large-border-radius);
+  --box-shadow: none;
+}
+
+::ng-deep .searchbar-input.sc-ion-searchbar-md {
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+}
+
+::ng-deep .searchbar-search-icon.sc-ion-searchbar-md {
+  color: #000;
+  font-size: 32px;
+}
+
+app-map {
+  display: block;
+  height: 100%;
+}
+
+.transparent-header {
+  ion-toolbar {
+    --background: transparent;
+    --border-width: 0;
+    --box-shadow: none;
+    --color: white; // if your map is dark
+  }
+}
+
+.material-symbols-outlined {
+  font-variation-settings:
+    "FILL" 0,
+    "wght" 400,
+    "GRAD" 0,
+    "opsz" 24;
+}
+
+.animated-word {
+  display: inline-block;
+  animation: fadeWord 2s infinite;
+  font-weight: 500;
+}
+
+@media (prefers-color-scheme: dark) {
+  .animated-word {
+    color: #ffffff;
+  }
+
+  ::ng-deep .searchbar-search-icon.sc-ion-searchbar-md {
+    color: white;
+    font-size: 32px;
+  }
+}
+
+@keyframes fadeWord {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  15% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  85% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
