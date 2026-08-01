@@ -44,6 +44,7 @@
     "bootstrap-icons": "^1.13.1",
     "ionicons": "^7.0.0",
     "leaflet": "^1.9.4",
+    "leaflet.markercluster": "^1.5.3",
     "lodash": "^4.17.21",
     "ngx-image-cropper": "^9.1.5",
     "rxjs": "~7.8.0",
@@ -69,6 +70,7 @@
     "@types/lodash": "^4.17.20",
     "@typescript-eslint/eslint-plugin": "^8.18.0",
     "@typescript-eslint/parser": "^8.18.0",
+    "autoprefixer": "^10.5.4",
     "eslint": "^9.16.0",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-jsdoc": "^48.2.1",
@@ -80,6 +82,8 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
+    "postcss": "^8.5.23",
+    "tailwindcss": "^3.4.17",
     "typescript": "~5.8.0"
   },
   "description": "An Ionic project"

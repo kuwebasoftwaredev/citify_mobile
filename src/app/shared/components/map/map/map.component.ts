@@ -30,7 +30,7 @@ import { size } from 'lodash';
 import { Geolocation } from 'src/app/core/services/geolocation/geolocation.service';
 // import { ShopListComponent } from "src/app/bottom-sheets/shop-list/shop-list.component";
 declare let L: any; // Declare Leaflet from the global scope
-
+import 'leaflet.markercluster';
 @Component({
   selector: 'app-map',
   templateUrl: './map.component.html',
@@ -71,7 +71,7 @@ export class MapComponent
     private router: Router,
     private route: ActivatedRoute,
     // private hrs: HttpRequestService,
-    private GeolocationService: Geolocation // private swipeSheet: BottomSheetProvider
+    private GeolocationService: Geolocation, // private swipeSheet: BottomSheetProvider
   ) {}
 
   ngOnInit(): void {
@@ -193,7 +193,9 @@ export class MapComponent
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    this.addNearShops();
+    if (this.map) {
+      this.addNearShops();
+    }
 
     if (
       changes['subject'] &&
@@ -293,24 +295,50 @@ export class MapComponent
     // }
 
     this.map = L.map('map', {
-      center: [12.8797, 121.774], // Center of the Philippines
+      center: [12.8797, 121.774], // Philippines center
+      zoom: 6,
 
       minZoom: 5,
-      maxZoom: 25,
+      maxZoom: 19,
+
       maxBounds: [
-        [4.5, 116.0], // Southwest corner (Palawan)
-        [21.0, 127.0], // Northeast corner (Batanes)
+        [4.4, 115.5], // Southwest (Palawan)
+        [21.5, 127.5], // Northeast (Batanes)
       ],
-      maxBoundsViscosity: 1.0, // Fully restrict panning outside bounds
+
+      maxBoundsViscosity: 1.0,
+
+      zoomControl: false,
+
+      // Performance
+      preferCanvas: true,
+
+      // Mobile friendly
+      tap: true,
+      touchZoom: true,
+      dragging: true,
+
+      // Smooth zoom
       zoomAnimation: true,
       fadeAnimation: true,
-      zoomControl: false,
-    }).setView([0, 5], 5);
+      markerZoomAnimation: true,
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      // Better zoom behavior
+      zoomSnap: 0.25,
+      zoomDelta: 0.5,
+    });
+
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors',
+
       minZoom: 5,
-      maxZoom: 25,
+      maxZoom: 19,
+
       detectRetina: true,
+
+      // Improve loading
+      updateWhenIdle: true,
+      keepBuffer: 4,
     }).addTo(this.map);
 
     this.addZoomControl();
@@ -348,7 +376,7 @@ export class MapComponent
     // Add it to the map
     zoomControl.addTo(this.map);
     const zoomInButton = document.querySelector(
-      '.leaflet-control-zoom-in'
+      '.leaflet-control-zoom-in',
     ) as HTMLElement;
     if (zoomInButton) {
       zoomInButton.style.display = 'flex';
@@ -357,7 +385,7 @@ export class MapComponent
     }
 
     const zoomOutButton = document.querySelector(
-      '.leaflet-control-zoom-out'
+      '.leaflet-control-zoom-out',
     ) as HTMLElement;
     if (zoomOutButton) {
       zoomOutButton.style.display = 'flex';
@@ -393,7 +421,7 @@ export class MapComponent
       `;
 
       const gpsButton = container.querySelector(
-        '#gpsButton'
+        '#gpsButton',
       ) as HTMLLabelElement;
 
       gpsButton.addEventListener('click', async (event) => {
@@ -481,10 +509,10 @@ export class MapComponent
 
         // Handle slider input
         let slider = container.querySelector(
-          '#radius-slider'
+          '#radius-slider',
         ) as HTMLInputElement;
         const label = container.querySelector(
-          '#radius-value'
+          '#radius-value',
         ) as HTMLLabelElement;
         slider.value = this.radius.toString();
 
@@ -516,7 +544,66 @@ export class MapComponent
     sliderControl.addTo(this.map);
   }
 
+  generateMockCities() {
+    const locations = [
+      {
+        name: 'Iloilo City',
+        lat: 10.7202,
+        lng: 122.5621,
+      },
+      {
+        name: 'Manila',
+        lat: 14.5995,
+        lng: 120.9842,
+      },
+      {
+        name: 'Cebu City',
+        lat: 10.3157,
+        lng: 123.8854,
+      },
+      {
+        name: 'Davao City',
+        lat: 7.1907,
+        lng: 125.4553,
+      },
+      {
+        name: 'Bacolod City',
+        lat: 10.6765,
+        lng: 122.9509,
+      },
+    ];
+
+    this.cities = locations.map((city) => {
+      return {
+        name: city.name,
+        shops: Array.from({ length: 100 }, (_, index) => {
+          // random spread around city (~5-10km)
+          const latOffset = (Math.random() - 0.5) * 0.15;
+          const lngOffset = (Math.random() - 0.5) * 0.15;
+
+          return {
+            id: `${city.name}-${index}`,
+            name: `Shop ${index + 1} ${city.name}`,
+            coordinates: {
+              lat: city.lat + latOffset,
+              lng: city.lng + lngOffset,
+            },
+            category: ['Food', 'Electronics', 'Fashion', 'Services'][
+              Math.floor(Math.random() * 4)
+            ],
+          };
+        }),
+      };
+    });
+
+    console.log(
+      'Generated shops:',
+      this.cities.reduce((total, city) => total + city.shops.length, 0),
+    );
+  }
+
   addNearShops() {
+    this.generateMockCities();
     if (size(this.cities) <= 0) return;
     const SHOPIcon = L.divIcon({
       html: `<img src="https://cdn-icons-png.flaticon.com/128/869/869432.png" style="width: 40px; height: 40px;" />`,
@@ -524,18 +611,34 @@ export class MapComponent
       iconSize: [40, 40],
     });
 
+    const shopCluster = L.markerClusterGroup({
+      chunkedLoading: true,
+      maxClusterRadius: 60,
+    });
+
     this.cities.forEach((city) => {
       for (const shop of city.shops) {
         const marker = L.marker([shop.coordinates.lat, shop.coordinates.lng], {
           icon: SHOPIcon,
-        }).addTo(this.map);
+        });
 
-        // Optional popup
-        marker.bindPopup('Angular Leaflet');
+        marker.bindPopup(`
+      <div>
+        <strong>${shop.name}</strong>
+        <br>
+        ${city.name}
+      </div>
+    `);
 
-        marker.on('click', () => {});
+        marker.on('click', () => {
+          console.log(shop);
+        });
+
+        shopCluster.addLayer(marker);
       }
     });
+
+    this.map.addLayer(shopCluster);
 
     // Listen to zoom changes and scale icons
     this.map.on('zoomend', () => {
@@ -580,7 +683,7 @@ export class MapComponent
           fillOpacity: 0.3,
           stroke: false,
           radius: this.radius, // 1km in meters
-        }
+        },
       ).addTo(this.map);
     }
     //END
@@ -589,7 +692,7 @@ export class MapComponent
     this.map.flyTo(
       [this.subject.coordinates.lat, this.subject.coordinates.lng],
       12,
-      { animate: true }
+      { animate: true },
     );
 
     const iconUrl =
@@ -608,7 +711,7 @@ export class MapComponent
       {
         draggable: !this.disabled,
         icon: userLoc,
-      }
+      },
     )
       .bindPopup('Angular Leaflet')
       .addTo(this.map);

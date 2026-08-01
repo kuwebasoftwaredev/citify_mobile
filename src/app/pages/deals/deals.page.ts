@@ -14,6 +14,14 @@ import { finalize, map, Observable } from 'rxjs';
 export class DealsPage {
   @ViewChild(MapComponent) mapComponent!: MapComponent;
   cities$!: Observable<any>;
+  words = [
+    'Local Products 📦',
+    'Local Shops 🏪',
+    'Local Events 🎉',
+    'Local Services 🛠️',
+  ];
+  currentIndex = 0;
+  currentWord = this.words[0];
   constructor(private ShopService: Shop) {}
 
   ngOnInit() {
@@ -22,11 +30,16 @@ export class DealsPage {
     // );
   }
 
+  nextHint() {
+    this.currentIndex = (this.currentIndex + 1) % this.words.length;
+    this.currentWord = this.words[this.currentIndex];
+  }
+
   ionViewWillEnter() {
-    StatusBar.setOverlaysWebView({ overlay: false });
-    StatusBar.setBackgroundColor({ color: '#f7d94f' });
+    StatusBar.setOverlaysWebView({ overlay: true });
+    StatusBar.setBackgroundColor({ color: '#00000000' });
     this.cities$ = this.ShopService.getShops().pipe(
-      map((res: any) => res.data)
+      map((res: any) => res.data),
     );
   }
 

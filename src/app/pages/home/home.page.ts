@@ -21,11 +21,13 @@ export class HomePage {
   ionViewDidEnter() {
     this.tabsEl = document.querySelector('ion-tabs') as HTMLElement;
     this.headerEl = document.querySelector('ion-header') as HTMLElement;
+    this.sellEl = document.querySelector('.sell-container') as HTMLElement;
   }
 
   public lastY = 0;
   public tabsEl!: HTMLElement;
   public headerEl!: HTMLElement;
+  public sellEl!: HTMLElement;
   async onScroll(ev: any) {
     const y = ev.detail.scrollTop;
     console.log(ev);
@@ -35,10 +37,12 @@ export class HomePage {
     if (y > this.lastY) {
       this.tabsEl.classList.add('hide');
       this.headerEl.classList.add('change-color');
+      this.sellEl?.classList.add('hide');
       this.lastY = y;
       await StatusBar.setBackgroundColor({ color: '#ffffff' });
     } else if (y < this.lastY) {
       this.tabsEl.classList.remove('hide');
+      this.sellEl?.classList.remove('hide');
       this.headerEl.classList.remove('change-color');
       this.lastY = y;
       await StatusBar.setBackgroundColor({ color: '#f7d94f' });
