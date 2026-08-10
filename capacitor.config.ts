@@ -2,14 +2,14 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'io.ionic.starter',
-  appName: 'Citify',
+  appName: 'Citimo',
   webDir: 'www',
   plugins: {
     Keyboard: {
       resize: 'none',
     },
   },
-   server: {
+  server: {
     androidScheme: 'http',
     cleartext: true,
   },

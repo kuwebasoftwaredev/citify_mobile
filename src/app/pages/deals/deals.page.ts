@@ -15,11 +15,11 @@ export class DealsPage {
   @ViewChild(MapComponent) mapComponent!: MapComponent;
   cities$!: Observable<any>;
   words = [
-    'Local Products 📦',
-    'Local Shops 🏪',
-    'Local Events 🎉',
-    'Local Services 🛠️',
+    { emoji: '📦', text: 'Products' },
+    { emoji: '🏪', text: 'Shops' },
+    { emoji: '🎉', text: 'Events' },
   ];
+
   currentIndex = 0;
   currentWord = this.words[0];
   constructor(private ShopService: Shop) {}

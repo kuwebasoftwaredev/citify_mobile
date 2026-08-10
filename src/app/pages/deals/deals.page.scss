@@ -6,21 +6,6 @@
   --padding-bottom: 0;
 }
 
-ion-searchbar {
-  --border-radius: var(--spoonwise-large-border-radius);
-  --box-shadow: none;
-}
-
-::ng-deep .searchbar-input.sc-ion-searchbar-md {
-  padding-top: 8px !important;
-  padding-bottom: 8px !important;
-}
-
-::ng-deep .searchbar-search-icon.sc-ion-searchbar-md {
-  color: #000;
-  font-size: 32px;
-}
-
 app-map {
   display: block;
   height: 100%;
@@ -31,7 +16,7 @@ app-map {
     --background: transparent;
     --border-width: 0;
     --box-shadow: none;
-    --color: white; // if your map is dark
+    --color: white;
   }
 }
 
