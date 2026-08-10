@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { RefresherCustomEvent } from '@ionic/angular';
-import { StatusBar } from '@capacitor/status-bar';
+import { StatusBar, Style } from '@capacitor/status-bar';
 import { logout } from 'src/app/state/auth/auth.actions';
 import { Store } from '@ngrx/store';
 
@@ -15,7 +15,8 @@ export class HomePage {
 
   async ionViewWillEnter() {
     await StatusBar.setOverlaysWebView({ overlay: false });
-    await StatusBar.setBackgroundColor({ color: '#f7d94f' }); // red example
+    await StatusBar.setStyle({ style: Style.Dark });
+    await StatusBar.setBackgroundColor({ color: '#ffffff' });
   }
 
   ionViewDidEnter() {
@@ -45,7 +46,7 @@ export class HomePage {
       this.sellEl?.classList.remove('hide');
       this.headerEl.classList.remove('change-color');
       this.lastY = y;
-      await StatusBar.setBackgroundColor({ color: '#f7d94f' });
+      await StatusBar.setBackgroundColor({ color: '#ffffff' });
     }
   }
 

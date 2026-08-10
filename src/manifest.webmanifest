@@ -1,0 +1,18 @@
+{
+  "id": "/",
+  "name": "Citimo",
+  "short_name": "Citimo",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "assets/icons/square_logo_citimo.png",
+      "sizes": "256x256",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

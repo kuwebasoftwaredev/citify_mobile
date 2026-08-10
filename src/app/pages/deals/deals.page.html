@@ -20,17 +20,27 @@
     </div>
 
 
-    <div class="flex items-center  px-3 ">
+    <div class=" flex gap-2 items-center px-3">
       <div class="relative flex-1">
-        <ion-searchbar placeholder="" animated="true">
+        <ion-searchbar placeholder="" class="gs-explore-searchbar" animated="true" readonly (click)="modal.present()">
         </ion-searchbar>
 
-        <div class="pointer-events-none absolute left-14 top-1/2 -translate-y-1/2 flex items-center text-gray-500">
-          <span>Search&nbsp;</span>
+        <div class="pointer-events-none absolute inset-y-0 left-14 flex items-center text-gray-500">
 
-          <span (animationiteration)="nextHint()" class="animated-word  font-weight-bold">
-            {{ currentWord }}
+          <span class="mr-1">Search</span>
+
+          <span (animationiteration)="nextHint()" class="animated-word inline-flex items-center min-w-[140px] mb-[2px]">
+
+            <span class="font-semibold">
+              {{ currentWord.text }}
+            </span>
+
+            <span class=" text-[22px] leading-none">
+              {{ currentWord.emoji }}
+            </span>
+
           </span>
+
         </div>
 
         <span class="material-symbols-outlined absolute right-5 top-1/2 -translate-y-1/2 z-10 text-3xl ">
@@ -38,8 +48,8 @@
         </span>
       </div>
 
-      <ion-button fill="solid" class="gs-circle-btn ">
-        <span class="material-symbols-outlined text-2xl">tune</span>
+      <ion-button fill="solid" class="gs-circle-btn gs-explore-filter-button">
+        <span class="material-symbols-outlined text-3xl">tune</span>
       </ion-button>
     </div>
   </ion-toolbar>
@@ -54,3 +64,39 @@
     [checkDBLocation]="true" [disabled]="false" [radius]="3000" [nearestShopButton]="true" [topRatedShopButton]="true"
     (dragend)="onMapDragend($event)"></app-map>
 </ion-content>
+
+
+<ion-modal #modal>
+  <ng-template>
+    <ion-header>
+      <ion-toolbar class="px-2">
+
+
+
+        <div class="flex  items-center ">
+          <ion-button (click)="modal.dismiss()" fill="solid" class="gs-circle-btn">
+            <span class="material-symbols-outlined text-2xl">
+              keyboard_backspace
+            </span>
+          </ion-button>
+          <div class="relative flex-1">
+            <ion-searchbar placeholder="" animated="true">
+            </ion-searchbar>
+
+
+
+            <span class="material-symbols-outlined absolute right-5 top-1/2 -translate-y-1/2 z-10 text-3xl ">
+              center_focus_strong
+            </span>
+          </div>
+
+        </div>
+
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content class="px-2">
+      Test
+    </ion-content>
+  </ng-template>
+</ion-modal>

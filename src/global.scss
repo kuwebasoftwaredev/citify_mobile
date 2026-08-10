@@ -143,7 +143,13 @@ ion-input-otp {
 }
 
 ion-content {
-  --background: var(--spoonwise-very-light-background);
+  --background: var(--spoonwise-very-light-background) !important;
+}
+
+ion-modal ion-header,
+ion-modal ion-toolbar,
+ion-modal ion-content {
+  --background: var(--spoonwise-very-light-background) !important;
 }
 
 ion-modal {
@@ -241,11 +247,11 @@ ion-modal ion-content {
   --padding-end: var(--ion-padding, 16px) !important;
   --padding-top: var(--ion-padding, 16px) !important;
   --padding-bottom: var(--ion-padding, 16px) !important;
-  --background: white !important;
 }
-ion-toolbar ion-buttons {
-  display: none !important;
-}
+
+// ion-toolbar ion-buttons {
+//   display: none !important;
+// }
 
 ion-item {
   border-radius: var(--spoonwise-border-radius) !important;
@@ -369,4 +375,39 @@ ion-select::part(text) {
     "wght" 400,
     "GRAD" 0,
     "opsz" 24;
+}
+
+// Search Bar
+ion-searchbar {
+  --border-radius: var(--spoonwise-large-border-radius);
+  --box-shadow: none;
+}
+
+.gs-explore-searchbar {
+  --border-radius: 32px;
+  --icon-color: #000000;
+  padding: 0;
+}
+
+::ng-deep .gs-explore-searchbar .searchbar-input.sc-ion-searchbar-md {
+  min-height: 64px;
+  padding-top: 12px !important;
+  padding-bottom: 12px !important;
+  font-size: 18px;
+}
+
+ion-button.gs-explore-filter-button {
+  --background: #ffffff;
+  --color: #000000;
+  --border-radius: 50%;
+  width: 48;
+  min-width: 48;
+  height: 48;
+  min-height: 48;
+  margin: 0;
+}
+
+::ng-deep .gs-searchbar-search-icon.sc-ion-searchbar-md {
+  color: #000;
+  font-size: 32px;
 }
