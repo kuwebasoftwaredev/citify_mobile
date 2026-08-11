@@ -4,14 +4,13 @@ ion-tabs {
 
 ion-tab-bar {
   z-index: 9998 !important;
-  // height: 50px;
-  // padding-bottom: 20px;
   margin-bottom: 20px;
 }
 
 ion-tab-button {
   background: transparent !important;
-  --color-selected: black; // prevent Ionic default color
+  --color-selected: #000000;
+  --color: #000000;
   --ripple-color: transparent !important;
 
   .material-symbols-outlined,
@@ -21,140 +20,42 @@ ion-tab-button {
   }
 }
 
-ion-tab-button.tab-selected {
-  color: black;
+.sell-container {
+  z-index: 9999 !important;
+  height: 60px;
+  transition:
+    transform 0.4s ease,
+    opacity 0.4s ease;
 
-  .material-symbols-outlined,
-  ion-icon,
-  span {
-    color: black;
-  }
-}
-
-.sell-btn {
-  background: #d1d5db;
-  span {
-    color: #fff;
-  }
-}
-
-.sell-container.tab-selected,
-.sell-container:hover,
-.sell-container:active {
   .sell-btn {
-    background: #000;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 
     span {
-      color: #fff;
+      color: #000000;
+    }
+
+    ion-icon {
+      font-size: 30px;
+      --ionicon-stroke-width: 52px;
     }
   }
 }
 
 @media (prefers-color-scheme: dark) {
-  ion-tab-button.tab-selected,
-  ion-tab-button:hover {
-    color: white;
-
-    .material-symbols-outlined,
-    ion-icon,
-    span {
-      color: white;
-    }
-  }
-
-  ion-tab-button[tab="profile"].tab-selected ion-avatar,
-  ion-tab-button[tab="profile"]:hover ion-avatar {
-    box-shadow: 0 0 0 2px white;
-  }
-
-  .sell-btn {
-    background: #4b5563;
-    span {
-      color: black;
-    }
-  }
-
-  .sell-container.tab-selected,
-  .sell-container:hover,
-  .sell-container:active {
+  .sell-container {
     .sell-btn {
-      background: white;
-
       span {
-        color: black;
+        color: #ffffff;
       }
     }
   }
-}
 
-ion-tab-button.tab-selected ion-avatar {
-  box-shadow: 0 0 0 2px black;
-  border-radius: 50%;
-}
-
-ion-tab-button[tab="profile"] ion-avatar {
-  border: 2px solid transparent;
-}
-
-.sell-container {
-  z-index: 9999 !important;
-  // position: absolute;
-  // left: 50%;
-  // transform: translateX(-50%);
-  // bottom: 40px;
-  height: 60px;
-
-  transition:
-    transform 0.4s ease,
-    opacity 0.4s ease;
-}
-
-// .sell-container.hide {
-//   transition:
-//     transform 0.6s ease,
-//     opacity 0.6s ease;
-//   transform: translate(-50%, 100px);
-//   opacity: 0;
-// }
-
-.sell-btn {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  // border: 8px solid white;
-
-  // background: linear-gradient(180deg, #ff7b63, #a102f6);
-  // background: black;
-}
-
-// .sell-container .sell-btn {
-//   background: #000;
-// }
-
-// .sell-container.tab-selected .sell-btn,
-// .sell-container:hover .sell-btn,
-// .sell-container:active .sell-btn {
-//   background: #000;
-// }
-
-// @media (prefers-color-scheme: dark) {
-//   .sell-container .sell-btn {
-//     background: #fff;
-//   }
-
-//   .sell-container.tab-selected .sell-btn,
-//   .sell-container:hover .sell-btn,
-//   .sell-container:active .sell-btn {
-//     background: #fff;
-//   }
-// }
-
-.sell-btn ion-icon {
-  font-size: 30px;
-  --ionicon-stroke-width: 52px;
+  ion-tab-button {
+    --color: #ffffff; // prevent Ionic default color
+  }
 }

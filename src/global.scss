@@ -375,12 +375,19 @@ ion-select::part(text) {
     "wght" 400,
     "GRAD" 0,
     "opsz" 24;
+  color: black;
+}
+
+@media (prefers-color-scheme: dark) {
+  .material-symbols-outlined {
+    color: white;
+  }
 }
 
 // Search Bar
 ion-searchbar {
   --border-radius: var(--spoonwise-large-border-radius);
-  --box-shadow: none;
+  --box-shadow: none !important;
 }
 
 .gs-explore-searchbar {
