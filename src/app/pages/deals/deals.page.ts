@@ -1,5 +1,5 @@
 import { Component, ViewChild } from '@angular/core';
-import { RefresherCustomEvent } from '@ionic/angular';
+import { IonSearchbar, RefresherCustomEvent } from '@ionic/angular';
 import { StatusBar } from '@capacitor/status-bar';
 import { MapComponent } from 'src/app/shared/components/map/map/map.component';
 import { Shop } from 'src/app/core/services/shop/shop.service';
@@ -13,6 +13,9 @@ import { finalize, map, Observable } from 'rxjs';
 })
 export class DealsPage {
   @ViewChild(MapComponent) mapComponent!: MapComponent;
+  @ViewChild('searchbar', { static: false })
+  searchbar!: IonSearchbar;
+
   cities$!: Observable<any>;
   words = [
     { emoji: '📦', text: 'Products' },
