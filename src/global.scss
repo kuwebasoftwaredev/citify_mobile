@@ -94,7 +94,7 @@ ion-toolbar {
 
 .gs-circle-btn {
   --border-radius: 9999px;
-  --background: #ffffff;
+  --background: #fafafa;
   --color: #000000;
   width: 48px;
   height: 48px;
@@ -102,30 +102,93 @@ ion-toolbar {
   min-width: 48px;
   min-height: 48px;
 }
+
+.gs-circle-btn-no-bg {
+  --border-radius: 9999px;
+  --background: transparent;
+  --color: #000000;
+  width: 48px;
+  height: 48px;
+
+  min-width: 48px;
+  min-height: 48px;
+}
+
+ion-range {
+  --bar-background: var(--citimo-purple-light);
+  --bar-background-active: var(--citimo-purple);
+  --bar-height: 8px;
+  --bar-border-radius: 8px;
+  --knob-background: var(--citimo-purple);
+  --knob-size: 40px;
+  --pin-background: var(--citimo-purple-light);
+  --pin-color: var(--citimo-purple-light);
+}
+
+.gs-bg-citimo {
+  background-color: #fafafa;
+}
+
+.citimo-purple-button {
+  --background: var(--citimo-purple);
+  --color: #fff;
+}
+
+ion-toggle {
+  --track-background-checked: var(--citimo-purple);
+}
+
 @media (prefers-color-scheme: dark) {
   .gs-circle-btn {
-    --background: #000;
+    --background: #121212;
     --color: #fff;
 
     span {
       color: #fff;
     }
   }
+  .gs-circle-btn-no-bg {
+    --color: #fff;
+
+    span {
+      color: #fff;
+    }
+  }
+
+  .gs-explore-searchbar {
+    --background: #121212 !important;
+  }
+
+  .gs-list-item {
+    --background: #121212 !important;
+  }
+
+  ion-range {
+    --bar-background: var(--citimo-purple-light);
+    --knob-background: var(--citimo-purple);
+    --pin-background: #121212;
+    --pin-color: #121212;
+  }
+
+  .gs-bg-citimo {
+    background-color: #121212;
+  }
 }
 
-// Modal
-ion-modal ion-header,
-ion-modal ion-toolbar {
-  --border-width: 0 !important;
+.gs-pagetitle {
+  font-size: 1.2rem;
+  color: #000000;
+}
 
+ion-header,
+ion-toolbar,
+ion-content,
+ion-header,
+ion-content {
+  --border-width: 0 !important;
   --box-shadow: none !important;
-  --padding-top: env(safe-area-inset-top);
-  --background: white !important;
-  --color: #000000 !important;
   transition: transform 0.85s ease;
 }
-
-// End Modal
 
 image-cropper {
   border-radius: var(--spoonwise-border-radius) !important;
@@ -140,16 +203,6 @@ ion-input-otp {
 }
 .footer-md {
   box-shadow: none;
-}
-
-ion-content {
-  --background: var(--spoonwise-very-light-background) !important;
-}
-
-ion-modal ion-header,
-ion-modal ion-toolbar,
-ion-modal ion-content {
-  --background: var(--spoonwise-very-light-background) !important;
 }
 
 ion-modal {
@@ -197,6 +250,7 @@ ion-tab-bar {
 }
 
 /* hidden state ↓ */
+
 .hide {
   ion-tab-bar {
     transform: translateY(100%); /* slides downward */
@@ -228,8 +282,8 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-.small-text-size {
-  font-size: 0.9rem;
+.gs-small-text-size {
+  font-size: 0.8rem;
   color: var(--ion-color-medium);
 }
 
@@ -238,15 +292,15 @@ ion-label {
 }
 
 ion-content {
-  padding-inline-start: var(--ion-padding, 16px) !important;
-  padding-inline-end: var(--ion-padding, 16px) !important;
+  // padding-inline-start: var(--ion-padding, 16px) !important;
+  // padding-inline-end: var(--ion-padding, 16px) !important;
 }
 
 ion-modal ion-content {
-  --padding-start: var(--ion-padding, 16px) !important;
-  --padding-end: var(--ion-padding, 16px) !important;
-  --padding-top: var(--ion-padding, 16px) !important;
-  --padding-bottom: var(--ion-padding, 16px) !important;
+  // --padding-start: var(--ion-padding, 16px) !important;
+  // --padding-end: var(--ion-padding, 16px) !important;
+  // --padding-top: var(--ion-padding, 16px) !important;
+  // --padding-bottom: var(--ion-padding, 16px) !important;
 }
 
 // ion-toolbar ion-buttons {
@@ -302,10 +356,17 @@ p {
 }
 
 // ion-textarea
-.textarea-fill-outline.sc-ion-textarea-md-h {
+ion-textarea,
+ion-input {
   --border-color: var(--spoonwise-light-background);
-  --border-radius: var(--spoonwise-border-radius) var(--spoonwise-border-radius) !important;
+  --border-radius: var(--spoonwise-border-radius) !important;
+  // --label-font-size: 1.1rem !important;
+  --label-font-size: 12px !important;
 }
+// .textarea-fill-outline.sc-ion-textarea-md-h {
+//   --border-color: var(--spoonwise-light-background);
+//   --border-radius: var(--spoonwise-border-radius) !important;
+// }
 
 // ion-input
 .input-fill-outline.sc-ion-input-md-h {
@@ -378,9 +439,37 @@ ion-select::part(text) {
   color: black;
 }
 
+ion-badge {
+  color: #fff;
+}
+
+ion-radio {
+  --color-checked: var(--spoonwise-purple) !important;
+}
+
 @media (prefers-color-scheme: dark) {
   .material-symbols-outlined {
-    color: white;
+    color: #fff;
+  }
+
+  ion-icon {
+    color: #fff;
+  }
+
+  ion-badge {
+    color: #fff;
+  }
+
+  .gs-pagetitle {
+    color: #fff;
+  }
+
+  ion-header,
+  ion-toolbar,
+  ion-content,
+  ion-header,
+  ion-content {
+    --background: var(--spoonwise-dark-background) !important;
   }
 }
 
@@ -389,22 +478,31 @@ ion-searchbar {
   --border-radius: var(--spoonwise-large-border-radius);
   --box-shadow: none !important;
 }
-
+.searchbar-input.sc-ion-searchbar-md {
+  min-height: 48px;
+}
+.searchbar-search-icon.sc-ion-searchbar-md {
+  top: 13px;
+}
 .gs-explore-searchbar {
   --border-radius: 32px;
   --icon-color: #000000;
+  --background: #fafafa;
   padding: 0;
 }
 
+.gs-list-item {
+  --background: #fafafa;
+}
+
 ::ng-deep .gs-explore-searchbar .searchbar-input.sc-ion-searchbar-md {
-  min-height: 64px;
   padding-top: 12px !important;
   padding-bottom: 12px !important;
   font-size: 18px;
 }
 
 ion-button.gs-explore-filter-button {
-  --background: #ffffff;
+  --background: #fafafa;
   --color: #000000;
   --border-radius: 50%;
   width: 48;

@@ -1,0 +1,51 @@
+<ion-header [translucent]="true">
+  <ion-toolbar class="px-1">
+    <div class="flex  items-center  gap-2  ">
+      <ion-button (click)="back()" fill="solid" class="gs-circle-btn-no-bg">
+        <span class="material-symbols-outlined text-2xl">
+          keyboard_backspace
+        </span>
+      </ion-button>
+
+      <div class="gs-pagetitle font-bold">Notifications</div>
+
+    </div>
+
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="mx-1">
+
+    <ion-refresher slot="fixed">
+      <ion-refresher-content> </ion-refresher-content>
+    </ion-refresher>
+
+    <ion-list class="" lines="none">
+      @for (item of items; track item; let index = $index) {
+      <ion-item class="gs-list-item ">
+        <div class="notification flex items-center gap-2 rounded-3xl ">
+          <ion-avatar>
+            <img class="notification-thumbnail w-10" [src]="'https://picsum.photos/100/100?random=' + index"
+              alt="avatar" />
+          </ion-avatar>
+
+          <div>
+            <h2 class="notification-title">Notification {{ index + 1 }}</h2>
+            <p class="gs-small-text-size ">
+              This is a short excerpt from notification number {{ index + 1 }}.
+            </p>
+          </div>
+        </div>
+      </ion-item>
+      }
+    </ion-list>
+
+    <ion-infinite-scroll (ionInfinite)="onIonInfinite($event)">
+      <ion-infinite-scroll-content loadingText="Please wait..." loadingSpinner="bubbles"></ion-infinite-scroll-content>
+    </ion-infinite-scroll>
+    <div class="handle"></div>
+
+
+  </div>
+</ion-content>

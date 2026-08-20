@@ -1,0 +1,276 @@
+<ion-header>
+  <ion-toolbar>
+    <div class="flex flex-column  items-start  mb-1 ">
+      <ion-button (click)="close.emit()" fill="solid" class="gs-circle-btn-no-bg">
+        <span class="material-symbols-outlined text-2xl">
+          keyboard_backspace
+        </span>
+      </ion-button>
+
+      <div class="gs-pagetitle font-bold px-4">Search Filters</div>
+
+    </div>
+
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="flex flex-column gap-2">
+    <!-- Map Filters -->
+    <div class="flex flex-column items-start w-full">
+      <div class="flex flex-column items-start gap-2 w-full">
+        <!-- <div class="mb-1 font-bold px-4">Map Filters</div> -->
+        <div class="flex flex-column items-start w-full gap-2 py-2 px-4 rounded-3xl gs-bg-citimo ">
+          <!-- <div class="gs-inner-bg-citimo py-2 px-2 rounded-3xl w-full flex flex-column gap-2"> -->
+          <div class="flex justify-content-between w-full  ">
+            <div class="flex gap-2 min-w-0 flex-1">
+              <span class="material-symbols-outlined text-3xl">
+                my_location
+              </span>
+              <div class="flex flex-column  min-w-0 ">
+                <div class="font-[500]">Search around me</div>
+                <p class="gs-small-text-size ">Show items near your location</p>
+              </div>
+            </div>
+
+            <div class="flex gap-2 ">
+              <ion-toggle mode="ios" id="hasVariantToggle" [checked]="searchAroundMe()"
+                (ionChange)="searchAroundMe.set($event.detail.checked)"></ion-toggle>
+            </div>
+          </div>
+
+          <div class="flex flex-column gap-2  w-full">
+            <div class="flex justify-content-between w-full " [class.radius-disabled]="!searchAroundMe()">
+              <div class="flex gap-2 min-w-0 flex-1">
+                <span class="material-symbols-outlined text-3xl">
+                  radar
+                </span>
+                <div class="flex flex-column gap-2 min-w-0">
+                  <div class="font-[500]">Radius</div>
+
+                </div>
+              </div>
+
+              <div class="flex gap-2 font-[500]">
+                {{ this.radius() }} km
+              </div>
+            </div>
+            <div class="w-full">
+              <ion-range [disabled]="!searchAroundMe()" [ticks]="true" [snaps]="true" [min]="0" [max]="4"
+                [value]="radiusOptions.indexOf(radius())" (ionInput)="onRadiusChange($event)"></ion-range>
+            </div>
+          </div>
+          <!-- </div> -->
+
+          <!-- <div class="gs-inner-bg-citimo py-2 px-2 rounded-3xl w-full flex flex-column gap-2"> -->
+          <div class="flex justify-content-between w-full ">
+            <div class="flex gap-2  flex-1">
+              <span class="material-symbols-outlined text-3xl">
+                map
+              </span>
+              <div class="flex flex-column  min-w-0 ">
+                <div class="font-[500]"> Region</div>
+                <p class="gs-small-text-size "> All regions selected</p>
+              </div>
+            </div>
+
+            <div class="flex gap-2">
+              <div class="font-[500]"> All Regions </div>
+              <ion-icon name="chevron-forward-outline"></ion-icon>
+            </div>
+          </div>
+
+          <div class="flex justify-content-between w-full">
+            <div class="flex gap-2 flex-1">
+              <span class="material-symbols-outlined text-3xl">
+                domain
+              </span>
+              <div class="flex flex-column min-w-0">
+                <div class="font-[500]"> City/Municipality</div>
+                <p class="gs-small-text-size "> All cities included in selected regions</p>
+              </div>
+            </div>
+
+            <div class="flex gap-2 ">
+              <div class="font-[500]"> All Cities </div>
+              <ion-icon name="chevron-forward-outline"></ion-icon>
+            </div>
+          </div>
+          <!-- </div> -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Other filters -->
+    <div class="flex flex-column gap-2 w-full ">
+      <!-- <div class="mb-1 font-bold px-4"> Other Filters</div> -->
+      <div class="grid grid-cols-1 gap-2 w-full py-2 px-4 rounded-3xl gs-bg-citimo  text-center">
+        <!-- <div class="gs-inner-bg-citimo py-2 px-2 rounded-3xl w-full flex flex-column gap-2"> -->
+        <div class="flex flex-row gap-2 items-center justify-between">
+          <div class="flex flex-row gap-2 items-center">
+            <span class="material-symbols-outlined text-3xl">shoppingmode</span>
+            <div class="font-[500]">Condition</div>
+          </div>
+          <div class="flex flex-row gap-2 items-center justify-center">
+            <div class="font-[500]"> {{ otherFilters().condition.length ? otherFilters().condition.join(', ') :
+              'All' }} </div>
+            <ion-icon name="chevron-forward-outline"></ion-icon>
+          </div>
+        </div>
+
+
+        <div class="flex flex-row gap-2 items-center justify-between">
+          <div class="flex flex-row gap-2 items-center">
+            <span class="material-symbols-outlined text-3xl">delivery_truck_speed</span>
+            <div class="font-[500]">Delivery</div>
+          </div>
+          <div class="flex flex-row gap-2 items-center justify-center">
+            <div class="font-[500]"> {{ otherFilters().delivery.length ? otherFilters().delivery.join(', ') :
+              'All'
+              }} </div>
+            <ion-icon name="chevron-forward-outline"></ion-icon>
+          </div>
+        </div>
+
+        <div class="flex flex-row gap-2 items-center justify-between">
+          <div class="flex flex-row gap-2 items-center">
+            <span class="material-symbols-outlined text-3xl">mobiledata_arrows</span>
+            <div class="font-[500]">Sort by</div>
+          </div>
+          <div class="flex flex-row gap-2 items-center justify-center">
+            <div class="font-[500]"> {{ otherFilters().sortBy | titlecase }} </div>
+            <ion-icon name="chevron-forward-outline"></ion-icon>
+          </div>
+        </div>
+        <!-- </div> -->
+      </div>
+    </div>
+
+    <!-- Rating -->
+    <div class="flex flex-column items-start w-full gap-2 py-2 px-4 rounded-3xl gs-bg-citimo">
+      <div class="flex justify-content-between w-full ">
+        <div class="flex gap-2  flex-1">
+          <span class="material-symbols-outlined text-3xl">
+            local_mall
+          </span>
+          <div class="flex flex-column  min-w-0 ">
+            <div class="font-[500]"> Product Rating</div>
+            <p class="gs-small-text-size "> Filter by product rating</p>
+          </div>
+        </div>
+
+        <div class="flex gap-2">
+          <div class="font-[500]"> Change </div>
+          <ion-icon name="chevron-forward-outline"></ion-icon>
+        </div>
+      </div>
+      <div>
+        <ion-radio-group value="any" class="flex flex-column gap-2">
+          <div>
+            <ion-radio value="any" labelPlacement="end">
+              <div class="flex flex-column min-w-0">
+                <div class="font-[500]">Any Rating</div>
+                <p class="gs-small-text-size">Show items with any rating</p>
+              </div>
+            </ion-radio>
+          </div>
+          <div>
+            <ion-radio value="5" labelPlacement="end">
+              <div class="flex flex-column min-w-0">
+                <ngx-stars [readonly]="true" [color]="'#FBBF24'" [maxStars]="5" [initialStars]="5"
+                  [customPadding]="'0.5rem'" [size]="2">
+                </ngx-stars>
+                <p class="gs-small-text-size">Show items rated 5 stars</p>
+              </div>
+            </ion-radio>
+          </div>
+          <div>
+            <ion-radio value="4" labelPlacement="end">
+              <div class="flex flex-column min-w-0">
+                <ngx-stars [readonly]="true" [color]="'#FBBF24'" [maxStars]="5" [initialStars]="4"
+                  [customPadding]="'0.5rem'" [size]="2">
+                </ngx-stars>
+                <p class="gs-small-text-size">Show items rated 4 stars & above</p>
+              </div>
+            </ion-radio>
+          </div>
+          <div>
+            <ion-radio value="3" labelPlacement="end">
+              <div class="flex flex-column min-w-0">
+                <ngx-stars [readonly]="true" [color]="'#FBBF24'" [maxStars]="5" [initialStars]="3"
+                  [customPadding]="'0.5rem'" [size]="2">
+                </ngx-stars>
+                <p class="gs-small-text-size">Show items rated 3 stars & above</p>
+              </div>
+            </ion-radio>
+          </div>
+        </ion-radio-group>
+      </div>
+    </div>
+
+    <!-- Price Range -->
+    <div class="flex flex-column items-start w-full">
+      <!-- <div class="mb-1 font-bold px-4">Price Range</div> -->
+      <div class="flex flex-column items-start w-full  gs-bg-citimo py-2 px-4 rounded-3xl">
+        <!-- <div class="gs-inner-bg-citimo py-2 px-2 rounded-3xl w-full flex flex-column gap-2"> -->
+        <div class="flex justify-between w-full gap-2 pt-2">
+
+          <ion-input class="font-[500]" [value]="formatPrice(rangeValue().lower)" label="Minimum Price"
+            labelPlacement="stacked" type="text" readonly fill="outline">
+          </ion-input>
+
+          <ion-input class="font-[500]" [value]="formatPrice(rangeValue().upper)" label="Maximum Price"
+            labelPlacement="stacked" type="text" readonly fill="outline">
+          </ion-input>
+        </div>
+        <ion-range class="w-full" [dualKnobs]="true" min="0" max="20000" step="500" [value]="rangeValue()"
+          (ionInput)="onRangeChange($event)"></ion-range>
+        <!-- </div> -->
+      </div>
+    </div>
+
+    <!-- Categories -->
+    <div class="flex flex-column items-start w-full mb-2">
+      <!-- <div class="mb-1 font-bold px-4">Categories</div> -->
+      <div class="flex flex-column items-start w-full  gs-bg-citimo py-2 px-4 rounded-3xl">
+        <div class="grid grid-cols-[repeat(auto-fit,minmax(70px,1fr))] gap-2 w-full">
+          @for (category of categories; track category.id) {
+          <div class="flex flex-col items-center justify-center min-w-0 min-h-[66px]
+             py-2 px-1 rounded-2xl text-center cursor-pointer
+              border-3 border-transparent category-card" [class.category-selected]="
+  category.id === 'all'
+    ? selectedCategories().length === 0
+    : selectedCategories().includes(category.id)
+" [style.border-color]="
+  (category.id === 'all'
+    ? selectedCategories().length === 0
+    : selectedCategories().includes(category.id))
+      ? 'var(--citimo-purple-light)'
+      : 'transparent'
+" (click)="onCategorySelect(category.id)">
+            <span class="material-symbols-outlined text-3xl">
+              {{ category.icon }}
+            </span>
+
+            <p class="gs-small-text-size ">{{ category.name }}</p>
+          </div>
+          }
+
+          <div
+            class="flex flex-col items-center justify-center min-w-0 h-full py-2 px-1 gs-bg-citimo rounded-2xl text-center border-3 border-transparent category-card">
+            <span class="material-symbols-outlined text-3xl">more_horiz</span>
+            <p class="gs-small-text-size ">More</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>
+
+<ion-footer class="ion-no-border">
+  <div class="py-2 px-4 ">
+    <ion-button (click)="apply.emit(filters)" class="citimo-purple-button" expand="block">
+      Apply Filters
+    </ion-button>
+  </div>
+</ion-footer>

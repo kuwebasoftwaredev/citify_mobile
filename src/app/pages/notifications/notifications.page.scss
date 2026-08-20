@@ -1,0 +1,16 @@
+.notification {
+  .notification-thumbnail {
+  }
+
+  .notification-title {
+    font-weight: bold;
+    // font-size: 1.1rem;
+    margin: 0;
+  }
+
+  .notification-excerpt {
+    font-size: 0.9rem;
+    color: var(--ion-color-medium);
+    margin: 0;
+  }
+}
