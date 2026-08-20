@@ -38,6 +38,7 @@
             ],
             "styles": [
               "src/global.scss",
+              "node_modules/maplibre-gl/dist/maplibre-gl.css",
               "src/theme/variables.scss",
               "node_modules/bootstrap-icons/font/bootstrap-icons.css"
             ],
@@ -147,6 +148,7 @@
             ],
             "styles": [
               "src/global.scss",
+              "node_modules/maplibre-gl/dist/maplibre-gl.css",
               "src/theme/variables.scss",
               "node_modules/bootstrap-icons/font/bootstrap-icons.css"
             ],

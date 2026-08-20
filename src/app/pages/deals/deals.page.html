@@ -1,13 +1,16 @@
 <ion-header [translucent]="true" class="transparent-header ">
-  <ion-toolbar class="mx-4">
-    <div class="flex gap-1 items-center selection:file:">
-      <div>
+  <ion-toolbar class="px-1">
+    <div class="flex items-center   w-full">
+
+      <!-- Logo -->
+      <div class="w-10 flex-shrink-0">
         <img [src]="'./assets/logo_citimo.png'" class="w-8" />
       </div>
 
-      <div class="relative flex-1">
+      <!-- Search -->
+      <div class="relative flex-1 min-w-0">
         <ion-searchbar placeholder="" class="gs-explore-searchbar" animated="true" readonly
-          (click)="modal.present(); searchbar.setFocus()">
+          (click)="search.present(); searchbar.setFocus()">
         </ion-searchbar>
         <!-- 
         <div class="pointer-events-none absolute inset-y-0 left-14 flex items-center text-gray-500">
@@ -28,34 +31,27 @@
 
         </div> -->
 
-        <span class="material-symbols-outlined absolute right-5 top-1/2 -translate-y-1/2 z-10 text-3xl">
-          center_focus_strong
-        </span>
-      </div>
-
-      <ion-button fill="solid" class="gs-circle-btn ">
-        <span class="material-symbols-outlined text-3xl">tune</span>
-      </ion-button>
-
-      <!-- <div class="relative pr-4">
-        <ion-button fill="solid" class="gs-circle-btn">
-          <span class="material-symbols-outlined text-2xl">
-            notifications
+        <div class="absolute right-5 top-1/2 -translate-y-1/2 z-10 flex gap-2 items-center">
+          <span class="material-symbols-outlined text-3xl">
+            center_focus_strong
           </span>
-        </ion-button>
-
-        <ion-badge color="danger"
-          class="absolute top-1 right-4 min-w-5 h-5 flex items-center justify-center rounded-full text-[10px] px-1">
-          2
-        </ion-badge>
-      </div> -->
-      <div class=" flex gap-2 items-center px-3">
-
+          <span class="material-symbols-outlined text-3xl" (click)="filter.present();">tune</span>
+        </div>
       </div>
+
+      <!-- Notifications -->
+      <div class="relative  flex-shrink-0" (click)="openNotifications()">
+        <ion-button fill="solid" class="gs-circle-btn ">
+
+          <span class=" material-symbols-outlined text-3xl ">notifications</span>
+        </ion-button>
+        <ion-badge color="danger"
+          class="absolute top-1 right-[1px] min-w-9 h-6 flex items-center justify-center rounded-full text-[12px] px-1">
+          99+
+        </ion-badge>
+      </div>
+
     </div>
-
-
-
   </ion-toolbar>
 </ion-header>
 
@@ -64,25 +60,25 @@
     <ion-refresher-content> </ion-refresher-content>
   </ion-refresher> -->
 
-  <app-map [zIndex]="'1'" [cities]="cities$ | async" [borderRadius]="'0px'" [detectCurrentLocation]="true"
+  <app-map-gl [zIndex]="'1'" [cities]="(cities$ | async) ?? []" [borderRadius]="'0px'" [detectCurrentLocation]="true"
     [checkDBLocation]="true" [disabled]="false" [radius]="3000" [nearestShopButton]="true" [topRatedShopButton]="true"
-    (dragend)="onMapDragend($event)"></app-map>
+    (dragend)="onMapDragend($event)"></app-map-gl>
 </ion-content>
 
 
-<ion-modal #modal>
+<ion-modal #search>
   <ng-template>
     <ion-header>
-      <ion-toolbar class="px-4">
-        <div class="flex  items-center ">
-          <ion-button (click)="modal.dismiss()" fill="solid" class="gs-circle-btn">
+      <ion-toolbar>
+        <div class="flex  items-center mx-1">
+          <ion-button (click)="search.dismiss()" fill="solid" class="gs-circle-btn-no-bg">
             <span class="material-symbols-outlined text-2xl">
               keyboard_backspace
             </span>
           </ion-button>
           <div class="relative flex-1">
             <ion-searchbar #searchbar placeholder="" class="gs-explore-searchbar" animated="true"
-              (click)="modal.present()">
+              (click)="search.present()">
             </ion-searchbar>
 
             <span class="material-symbols-outlined absolute right-5 top-1/2 -translate-y-1/2 z-10 text-3xl ">
@@ -95,8 +91,65 @@
       </ion-toolbar>
     </ion-header>
 
-    <ion-content class="px-2">
-      Test
+    <ion-content>
+      <div class="mx-1">
+        <ion-list>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-2xl">
+                history
+              </span>
+              <ion-label>Iphone 14</ion-label>
+
+            </div>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-2xl">
+                history
+              </span>
+              <ion-label>Iphone 14</ion-label>
+
+            </div>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-2xl">
+                history
+              </span>
+              <ion-label>Iphone 14</ion-label>
+
+            </div>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-2xl">
+                history
+              </span>
+              <ion-label>Iphone 14</ion-label>
+
+            </div>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-2xl">
+                history
+              </span>
+              <ion-label>Iphone 14</ion-label>
+
+            </div>
+          </div>
+
+
+        </ion-list>
+      </div>
     </ion-content>
+  </ng-template>
+</ion-modal>
+
+<ion-modal #filter>
+  <ng-template>
+    <app-filter-modal [filters]="filters()" (apply)="onFiltersApply($event)" (close)="filter.dismiss()">
+    </app-filter-modal>
   </ng-template>
 </ion-modal>

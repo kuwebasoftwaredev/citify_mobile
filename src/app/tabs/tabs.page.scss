@@ -46,6 +46,10 @@ ion-tab-button {
   }
 }
 
+ion-tab-bar {
+  --background: #ffffff !important;
+}
+
 @media (prefers-color-scheme: dark) {
   .sell-container {
     .sell-btn {
@@ -56,6 +60,11 @@ ion-tab-button {
   }
 
   ion-tab-button {
-    --color: #ffffff; // prevent Ionic default color
+    --color-selected: #ffffff;
+    --color: #ffffff;
+  }
+
+  ion-tab-bar {
+    --background: #121212 !important;
   }
 }

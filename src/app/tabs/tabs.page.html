@@ -12,7 +12,7 @@
   }
   }
 
-  <ion-tab-bar slot="bottom" class="mx-8 py-1 px-5 rounded-full  text-gray-300  dark:bg-black dark:text-gray-100">
+  <ion-tab-bar slot="bottom" class="mx-2 py-1 px-2 rounded-full  text-gray-300  ">
     <ion-tab-button tab="home" href="/tabs/home" class="flex flex-col gap-0 ">
       <span class="material-symbols-outlined text-3xl">storefront</span>
       <span class="text-[12px] leading-none">Home</span>
@@ -27,9 +27,13 @@
 
     @if (auth$ | async; as auth) {
     @if (auth.role !== 'seller') {
-    <ion-tab-button tab="cart" href="/tabs/cart " class="">
-      <ion-icon name="bag-handle-sharp"></ion-icon>
+
+    <ion-tab-button tab="cart" href="/tabs/cart" class="flex flex-col items-center justify-center gap-0">
+
+      <span class="material-symbols-outlined text-[1.85rem]  ">shopping_bag_speed</span>
+      <span class="text-[12px] leading-none mt-1">Cart</span>
     </ion-tab-button>
+
     } @else {
     <!-- <ion-tab-button tab="product" href="/tabs/product">
       <span class="material-symbols-outlined text-3xl text-transparent">explore</span>
@@ -47,12 +51,13 @@
 
     <ion-tab-button tab="chats" href="/tabs/chats" class="flex flex-col items-center justify-center gap-0 ">
 
-      <span class="material-symbols-outlined text-3xl">chat_bubble</span>
-      <span class="text-[12px] leading-none">Messages</span>
+      <!-- <span class="material-symbols-outlined text-3xl">chat_bubble</span> -->
+      <ion-icon name="chatbubble-ellipses" class="text-3xl"></ion-icon>
+      <span class="text-[12px] leading-none mt-1">Chats</span>
     </ion-tab-button>
 
     <ion-tab-button tab="profile" href="/tabs/profile" class="">
-      <ion-avatar class="w-8 h-8 mt-[7px] mb-[1px]">
+      <ion-avatar class="w-7 h-7 mt-[5px] mb-[2px]">
         @if( auth$ | async; as auth ) {
         <img [src]="auth.role === 'buyer' ? auth.profile_picture.url : auth.shop?.logo" alt="avatar" />
         }

@@ -2,14 +2,18 @@
 // http://ionicframework.com/docs/theming/
 
 :root {
+  --citimo-purple: #a102f6;
+  --citimo-purple-light: #f1d6ff;
+
   --spoonwise-primary: #f7d94f; // #f7d94f; //#0055e8
 
   --spoonwise-secondary: #b50df7;
   --spoonwise-light-background: #edeef0;
-  --spoonwise-very-light-background: #f8f8f8;
+  --spoonwise-very-light-background: #fafafa;
   --spoonwise-border-radius: 1rem !important;
   --spoonwise-large-border-radius: 4rem !important;
   --spoonwise-full-border-radius: 100% !important;
+  --spoonwise-dark-background: #1e1e1e;
 
   --ion-padding: 14px;
   --ion-background-color: #ffffff;
